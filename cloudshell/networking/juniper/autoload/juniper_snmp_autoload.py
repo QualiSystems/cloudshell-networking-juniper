@@ -205,6 +205,7 @@ class JuniperSnmpAutoload(object):
         self._autoneg = None
         self._lldp_keys = None
         self._power_port_indexes = []
+        self._module_indexes = []
 
     @property
     def logger(self):
@@ -375,7 +376,7 @@ class JuniperSnmpAutoload(object):
 
                 power_port_id = int(index2)
                 if power_port_id in self._power_port_indexes:
-                    power_port_id = max(self._power_port_indexes)+1
+                    power_port_id = max(self._power_port_indexes) + 1
                 self._power_port_indexes.append(power_port_id)
                 power_port_id = str(power_port_id)
 
@@ -411,7 +412,12 @@ class JuniperSnmpAutoload(object):
                 content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
                                                                 modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
-                module_id = index2
+
+                module_id = int(index2)
+                if module_id in self._module_indexes:
+                    module_id = max(self._module_indexes) + 1
+                self._module_indexes.append(module_id)
+                module_id = str(module_id)
 
                 module = GenericModule(shell_name=self.shell_name,
                                        name="Module {}".format(module_id),
