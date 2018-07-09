@@ -246,7 +246,10 @@ class JuniperSnmpAutoload(object):
 
     def _build_lldp_keys(self):
         result_dict = {}
-        keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        try:
+            keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        except:
+            keys = []
         for key in keys:
             key_splited = str(key).split('.')
             if len(key_splited) == 3:
@@ -373,11 +376,10 @@ class JuniperSnmpAutoload(object):
                                                                 power_modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
 
-                power_port_id = int(index2)
+                power_port_id = index2
                 if power_port_id in self._power_port_indexes:
-                    power_port_id = max(self._power_port_indexes)+1
+                    continue
                 self._power_port_indexes.append(power_port_id)
-                power_port_id = str(power_port_id)
 
                 power_port = GenericPowerPort(shell_name=self.shell_name,
                                               name="PP{}".format(power_port_id),
@@ -412,6 +414,9 @@ class JuniperSnmpAutoload(object):
                                                                 modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
                 module_id = index2
+
+                if module_id in self._modules:
+                    continue
 
                 module = GenericModule(shell_name=self.shell_name,
                                        name="Module {}".format(module_id),
