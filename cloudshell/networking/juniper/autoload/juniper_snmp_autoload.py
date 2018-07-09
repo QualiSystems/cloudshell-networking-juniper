@@ -246,7 +246,10 @@ class JuniperSnmpAutoload(object):
 
     def _build_lldp_keys(self):
         result_dict = {}
-        keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        try:
+            keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        except:
+            keys = []
         for key in keys:
             key_splited = str(key).split('.')
             if len(key_splited) == 3:
