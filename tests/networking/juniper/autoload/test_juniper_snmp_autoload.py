@@ -159,6 +159,34 @@ class TestJuniperSnmpAutoload(TestCase):
                  call('SNMPv2-MIB', 'sysLocation', '0')]
         self._snmp_handler.get_property.assert_has_calls(calls)
 
+    def test_build_root2(self):
+        vendor = 'Test_Vendor'
+        model = 'Tets_Model'
+        version = '12.1R6.5'
+        contact_name = Mock()
+        system_name = Mock()
+        location = Mock()
+        self._snmp_handler.get_property.side_effect = [
+            "{0}-testjnxProduct{1}".format(vendor, model),
+            "TEst JUNOS {} #/test".format(version),
+            contact_name,
+            system_name,
+            location
+        ]
+
+        self._autoload_operations_instance._build_root()
+
+        self.assertIs(self._autoload_operations_instance.resource.contact_name, contact_name)
+        self.assertIs(self._autoload_operations_instance.resource.system_name, system_name)
+        self.assertIs(self._autoload_operations_instance.resource.location, location)
+        self.assertEqual(self._resource.os_version, version)
+        self.assertEqual(self._resource.vendor, vendor.capitalize())
+        self.assertEqual(self._resource.model, model)
+        calls = [call('SNMPv2-MIB', 'sysObjectID', 0), call('SNMPv2-MIB', 'sysDescr', '0'),
+                 call('SNMPv2-MIB', 'sysContact', '0'), call('SNMPv2-MIB', 'sysName', '0'),
+                 call('SNMPv2-MIB', 'sysLocation', '0')]
+        self._snmp_handler.get_property.assert_has_calls(calls)
+
     def test_get_content_indexes(self):
         index1 = 1
         index2 = 2
