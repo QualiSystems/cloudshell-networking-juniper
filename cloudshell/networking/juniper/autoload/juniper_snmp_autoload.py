@@ -205,6 +205,7 @@ class JuniperSnmpAutoload(object):
         self._autoneg = None
         self._lldp_keys = None
         self._power_port_indexes = []
+        self._chassis_indexes = []
 
     @property
     def logger(self):
@@ -347,6 +348,11 @@ class JuniperSnmpAutoload(object):
                     index)
                 index1, index2, index3, index4 = index.split('.')[:4]
                 chassis_id = index2
+
+                if chassis_id in self._chassis_indexes:
+                    continue
+
+                self._chassis_indexes.append(chassis_id)
 
                 chassis = GenericChassis(shell_name=self.shell_name,
                                          name="Chassis {}".format(chassis_id),
