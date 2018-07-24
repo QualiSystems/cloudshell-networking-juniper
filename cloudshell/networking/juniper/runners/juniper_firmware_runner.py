@@ -8,7 +8,7 @@ from cloudshell.networking.juniper.flows.juniper_firmware_flow import JuniperFir
 
 class JuniperFirmwareRunner(FirmwareRunner):
     def __init__(self, cli, logger, resource_config, api):
-        super(JuniperFirmwareRunner, self).__init__(logger)
+        super(JuniperFirmwareRunner, self).__init__(logger, cli)
         self.cli = cli
         self.api = api
         self.resource_config = resource_config
