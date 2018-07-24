@@ -63,3 +63,5 @@ target/
 .pypirc
 
 .DS_Store
+
+.idea/
