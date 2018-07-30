@@ -2,20 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from cloudshell.devices.runners.firmware_runner import FirmwareRunner
-from cloudshell.networking.juniper.cli.juniper_cli_handler import JuniperCliHandler
 from cloudshell.networking.juniper.flows.juniper_firmware_flow import JuniperFirmwareFlow
 
 
 class JuniperFirmwareRunner(FirmwareRunner):
-    def __init__(self, cli, logger, resource_config, api):
-        super(JuniperFirmwareRunner, self).__init__(logger, cli)
-        self.cli = cli
-        self.api = api
-        self.resource_config = resource_config
-
-    @property
-    def cli_handler(self):
-        return JuniperCliHandler(self.cli, self.resource_config, self._logger, self.api)
+    def __init__(self, cli_handler, logger):
+        super(JuniperFirmwareRunner, self).__init__(logger, cli_handler)
 
     @property
     def load_firmware_flow(self):
