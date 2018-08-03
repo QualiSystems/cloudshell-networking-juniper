@@ -204,6 +204,8 @@ class JuniperSnmpAutoload(object):
         self._if_duplex_table = None
         self._autoneg = None
         self._lldp_keys = None
+        self._power_port_indexes = []
+        self._chassis_indexes = []
 
     @property
     def logger(self):
@@ -245,7 +247,10 @@ class JuniperSnmpAutoload(object):
 
     def _build_lldp_keys(self):
         result_dict = {}
-        keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        try:
+            keys = self.snmp_handler.walk(('LLDP-MIB', 'lldpRemPortId')).keys()
+        except:
+            keys = []
         for key in keys:
             key_splited = str(key).split('.')
             if len(key_splited) == 3:
@@ -289,8 +294,7 @@ class JuniperSnmpAutoload(object):
         model = ''
         os_version = ''
         sys_obj_id = self.snmp_handler.get_property('SNMPv2-MIB', 'sysObjectID', 0)
-        model_search = re.search('^(?P<vendor>\w+)-\S+jnxProductName(?P<model>\S+)', sys_obj_id
-                                 )
+        model_search = re.search('^(?P<vendor>\w+)-\S+jnxProduct(?:Name)?(?P<model>\S+)', sys_obj_id)
         if model_search:
             vendor = model_search.groupdict()['vendor'].capitalize()
             model = model_search.groupdict()['model']
@@ -345,6 +349,11 @@ class JuniperSnmpAutoload(object):
                 index1, index2, index3, index4 = index.split('.')[:4]
                 chassis_id = index2
 
+                if chassis_id in self._chassis_indexes:
+                    continue
+
+                self._chassis_indexes.append(chassis_id)
+
                 chassis = GenericChassis(shell_name=self.shell_name,
                                          name="Chassis {}".format(chassis_id),
                                          unique_id="{0}.{1}.{2}".format(self._resource_name, "chassis", index))
@@ -372,7 +381,11 @@ class JuniperSnmpAutoload(object):
                 content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
                                                                 power_modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
+
                 power_port_id = index2
+                if power_port_id in self._power_port_indexes:
+                    continue
+                self._power_port_indexes.append(power_port_id)
 
                 power_port = GenericPowerPort(shell_name=self.shell_name,
                                               name="PP{}".format(power_port_id),
@@ -407,6 +420,9 @@ class JuniperSnmpAutoload(object):
                                                                 modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
                 module_id = index2
+
+                if module_id in self._modules:
+                    continue
 
                 module = GenericModule(shell_name=self.shell_name,
                                        name="Module {}".format(module_id),

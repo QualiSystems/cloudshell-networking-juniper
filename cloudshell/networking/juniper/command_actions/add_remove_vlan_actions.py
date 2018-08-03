@@ -1,7 +1,9 @@
-from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
 import re
-from cloudshell.networking.juniper.command_templates import add_remove_vlan as command_template
+
 from cloudshell.cli.cli_service import CliService
+from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
+from cloudshell.cli.session.session_exceptions import CommandExecutionException
+from cloudshell.networking.juniper.command_templates import add_remove_vlan as command_template
 
 
 class AddRemoveVlanActions(object):
@@ -83,17 +85,21 @@ class AddRemoveVlanActions(object):
         :param mode:
         :return:
         """
-        output = CommandTemplateExecutor(self._cli_service, command_template.ASSIGN_VLAN_MEMBER).execute_command(
-            port=port,
-            vlan_range=vlan_range,
-            mode=mode)
+
+        try:
+            output = CommandTemplateExecutor(self._cli_service, command_template.ASSIGN_VLAN_MEMBER).execute_command(
+                port=port, vlan_range=vlan_range, mode=mode)
+        except CommandExecutionException:
+            output = CommandTemplateExecutor(self._cli_service,
+                                             command_template.ASSIGN_VLAN_MEMBER_ELS).execute_command(
+                port=port, vlan_range=vlan_range, mode=mode)
         return output
 
     def delete_member(self, port, vlan_range):
         """
         Delete interface from vlan members
         :param port:
-        :param vlan_name:
+        :param vlan_range:
         :return:
         """
         output = CommandTemplateExecutor(self._cli_service, command_template.DELETE_VLAN_MEMBER).execute_command(
@@ -116,8 +122,12 @@ class AddRemoveVlanActions(object):
         return []
 
     def remove_port_mode_on_interface(self, port):
-        output = CommandTemplateExecutor(self._cli_service,
-                                         command_template.DELETE_PORT_MODE_ON_INTERFACE).execute_command(port_name=port)
+        try:
+            output = CommandTemplateExecutor(self._cli_service, command_template.DELETE_PORT_MODE_ON_INTERFACE
+                                             ).execute_command(port_name=port)
+        except CommandExecutionException:
+            output = CommandTemplateExecutor(self._cli_service, command_template.DELETE_PORT_MODE_ON_INTERFACE_ELS
+                                             ).execute_command(port_name=port)
 
         self._logger.info("Port mode removed for {0}".format(port))
         return output
@@ -155,7 +165,8 @@ class AddRemoveVlanActions(object):
         :return:
         """
         pattern = r'dot1q-tunneling;'
-        out = CommandTemplateExecutor(self._cli_service, command_template.SHOW_SPECIFIC_VLAN).execute_command(vlan_name=vlan_name)
+        out = CommandTemplateExecutor(self._cli_service, command_template.SHOW_SPECIFIC_VLAN).execute_command(
+            vlan_name=vlan_name)
         if re.search(pattern, out, flags=re.MULTILINE | re.IGNORECASE):
             return True
         else:
