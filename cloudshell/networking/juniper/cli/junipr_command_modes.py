@@ -18,7 +18,7 @@ class CliCommandMode(CommandMode):
         CommandMode.__init__(self, CliCommandMode.PROMPT, CliCommandMode.ENTER_COMMAND,
                              CliCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
                              exit_action_map=self.exit_action_map(), enter_error_map=self.enter_error_map(),
-                             exit_error_map=self.exit_error_map())
+                             exit_error_map=self.exit_error_map(), use_exact_prompt=True)
 
     def enter_actions(self, cli_operations):
         pass
@@ -48,10 +48,11 @@ class DefaultCommandMode(CommandMode):
                              DefaultCommandMode.ENTER_COMMAND,
                              DefaultCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
                              exit_action_map=self.exit_action_map(), enter_error_map=self.enter_error_map(),
-                             exit_error_map=self.exit_error_map())
+                             exit_error_map=self.exit_error_map(), use_exact_prompt=True)
 
     def enter_actions(self, cli_operations):
         cli_operations.send_command('set cli screen-length 0')
+        cli_operations.send_command('set cli screen-width 0')
 
     def enter_action_map(self):
         return OrderedDict()
@@ -67,7 +68,7 @@ class DefaultCommandMode(CommandMode):
 
 
 class ConfigCommandMode(CommandMode):
-    PROMPT = r'\[edit\]\n.*#\s*$'
+    PROMPT = r'(\[edit\]\n.*#)\s*$'
     ENTER_COMMAND = 'configure'
     EXIT_COMMAND = 'exit'
 
@@ -78,7 +79,7 @@ class ConfigCommandMode(CommandMode):
                              ConfigCommandMode.ENTER_COMMAND,
                              ConfigCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
                              exit_action_map=self.exit_action_map(), enter_error_map=self.enter_error_map(),
-                             exit_error_map=self.exit_error_map())
+                             exit_error_map=self.exit_error_map(), use_exact_prompt=True)
 
     def enter_action_map(self):
         return OrderedDict([(r'[Pp]assword', lambda session, logger: session.send_line(

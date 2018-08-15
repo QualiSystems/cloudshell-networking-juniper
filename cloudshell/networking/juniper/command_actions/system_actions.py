@@ -7,7 +7,7 @@ class SystemActions(object):
         """
         Reboot actions
         :param cli_service: default mode cli_service
-        :type cli_service: CliService
+        :type cli_service: cloudshell.cli.cli_service.CliService
         :param logger:
         :type logger: Logger
         :return:
@@ -31,12 +31,13 @@ class SystemActions(object):
         output = CommandTemplateExecutor(self._cli_service, command_template.SHUTDOWN).execute_command()
         return output
 
-    def load_firmware(self, src_path):
+    def load_firmware(self, src_path, timeout=600):
         """
-        Ubgrade firmware
+        Upgrade firmware
         :param src_path:
-        :return:
+        :param timeout:
         """
-        output = CommandTemplateExecutor(self._cli_service, command_template.FIRMWARE_UPGRADE).execute_command(
+        output = CommandTemplateExecutor(self._cli_service, command_template.FIRMWARE_UPGRADE,
+                                         timeout=timeout).execute_command(
             src_path=src_path)
         return output

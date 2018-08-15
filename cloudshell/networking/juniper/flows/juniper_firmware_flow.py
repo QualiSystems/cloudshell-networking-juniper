@@ -21,10 +21,10 @@ class JuniperFirmwareFlow(LoadFirmwareFlow):
             raise Exception(self.__class__.__name__, "Firmware file path cannot be empty")
         with self._cli_handler.get_cli_service(self._cli_handler.enable_mode) as cli_service:
             system_actions = SystemActions(cli_service, self._logger)
-            system_actions.load_firmware(path)
+            system_actions.load_firmware(path, timeout=timeout)
             waiting_time = 0
             try:
-                system_actions.reboot(10)
+                system_actions.reboot(20)
                 self._logger.debug('Waiting session down')
                 waiting_time = self._wait_session_disconnect(cli_service, timeout)
             except:

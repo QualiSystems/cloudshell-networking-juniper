@@ -3,7 +3,7 @@ from cloudshell.devices.flows.cli_action_flows import EnableSnmpFlow
 from cloudshell.networking.juniper.cli.juniper_cli_handler import JuniperCliHandler
 from cloudshell.networking.juniper.command_actions.commit_rollback_actions import CommitRollbackActions
 from cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions import EnableDisableSnmpActions
-from cloudshell.snmp.snmp_parameters import SNMPV2Parameters
+from cloudshell.snmp.snmp_parameters import SNMPV2ReadParameters
 
 
 class JuniperEnableSnmpFlow(EnableSnmpFlow):
@@ -19,7 +19,7 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         self._cli_handler = cli_handler
 
     def execute_flow(self, snmp_parameters):
-        if not isinstance(snmp_parameters, SNMPV2Parameters):
+        if not isinstance(snmp_parameters, SNMPV2ReadParameters):
             message = 'Unsupported SNMP version'
             self._logger.error(message)
             raise Exception(self.__class__.__name__, message)
