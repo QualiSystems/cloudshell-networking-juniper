@@ -1,13 +1,13 @@
 from unittest import TestCase
 
-from mock import Mock, patch
+from mock import Mock, patch, create_autospec
 
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
 
 class TestSystemActions(TestCase):
     def setUp(self):
-        self._cli_service = Mock()
+        self._cli_service = create_autospec('cloudshell.cli.cli_service.CliService')
         self._logger = Mock()
         self._instance = SystemActions(self._cli_service, self._logger)
 
@@ -47,5 +47,6 @@ class TestSystemActions(TestCase):
         execute_command.execute_command.return_value = output
         src_path = Mock()
         self.assertIs(self._instance.load_firmware(src_path), output)
-        command_template_executor.assert_called_once_with(self._cli_service, command_template.FIRMWARE_UPGRADE)
+        command_template_executor.assert_called_once_with(
+            self._cli_service, command_template.FIRMWARE_UPGRADE, timeout=600)
         execute_command.execute_command.assert_called_once_with(src_path=src_path)

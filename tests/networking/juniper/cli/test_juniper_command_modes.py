@@ -1,7 +1,7 @@
 from collections import OrderedDict
-from unittest import TestCase, skip
+from unittest import TestCase
 
-from mock import Mock, patch
+from mock import Mock, patch, call
 
 from cloudshell.networking.juniper.cli.junipr_command_modes import DefaultCommandMode, CliCommandMode, \
     ConfigCommandMode, EditSnmpCommandMode
@@ -36,7 +36,8 @@ class TestJuniperCliCommandMode(TestCase):
                                                   enter_action_map=enter_action_map_result,
                                                   exit_action_map=exit_action_map_result,
                                                   enter_error_map=enter_error_map_result,
-                                                  exit_error_map=exit_error_map_result)
+                                                  exit_error_map=exit_error_map_result,
+                                                  use_exact_prompt=True)
         return instance
 
     def test_init(self):
@@ -88,7 +89,8 @@ class TestJuniperDefaultCommandMode(TestCase):
                                                   enter_action_map=enter_action_map_result,
                                                   exit_action_map=exit_action_map_result,
                                                   enter_error_map=enter_error_map_result,
-                                                  exit_error_map=exit_error_map_result)
+                                                  exit_error_map=exit_error_map_result,
+                                                  use_exact_prompt=True)
         return instance
 
     def test_init(self):
@@ -98,7 +100,11 @@ class TestJuniperDefaultCommandMode(TestCase):
     def test_enter_action(self):
         cli_operations = Mock()
         self._instance.enter_actions(cli_operations)
-        cli_operations.send_command.assert_called_once_with('set cli screen-length 0')
+
+        cli_operations.send_command.assert_has_calls([
+            call('set cli screen-length 0'),
+            call('set cli screen-width 0'),
+        ])
 
     def test_enter_action_map(self):
         self.assertEqual(self._instance.enter_action_map(), OrderedDict())
@@ -141,7 +147,8 @@ class TestJuniperConfigCommandMode(TestCase):
                                                   enter_action_map=enter_action_map_result,
                                                   exit_action_map=exit_action_map_result,
                                                   enter_error_map=enter_error_map_result,
-                                                  exit_error_map=exit_error_map_result)
+                                                  exit_error_map=exit_error_map_result,
+                                                  use_exact_prompt=True)
         return instance
 
     def test_init(self):

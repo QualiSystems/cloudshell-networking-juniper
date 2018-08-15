@@ -7,9 +7,8 @@ from cloudshell.networking.juniper.flows.juniper_autoload_flow import JuniperSnm
 
 class JuniperAutoloadRunner(AutoloadRunner):
     def __init__(self, cli_handler, snmp_handler, logger, resource_config):
-        super(JuniperAutoloadRunner, self).__init__(resource_config)
+        super(JuniperAutoloadRunner, self).__init__(resource_config, logger)
         self._cli_handler = cli_handler
-        self._logger = logger
         self._snmp_handler = snmp_handler
 
     @property
