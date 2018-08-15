@@ -17,7 +17,7 @@ class JuniperDisableSnmpFlow(DisableSnmpFlow):
         super(JuniperDisableSnmpFlow, self).__init__(cli_handler, logger)
         self._cli_handler = cli_handler
 
-    def execute_flow(self):
+    def execute_flow(self, snmp_parameters=None):
         with self._cli_handler.config_mode_service() as cli_service:
             snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
             commit_rollback = CommitRollbackActions(cli_service, self._logger)
