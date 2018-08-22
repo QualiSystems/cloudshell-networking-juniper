@@ -33,7 +33,7 @@ class EnableDisableSnmpActions(object):
             present = False
         return present
 
-    def enable_snmp(self, snmp_community):
+    def enable_snmp(self, snmp_community, write=False):
         """
         Enable snmp on the device
         :return:
@@ -41,8 +41,12 @@ class EnableDisableSnmpActions(object):
         edit_snmp_mode = EditSnmpCommandMode()
         self._cli_service.command_mode.add_child_node(edit_snmp_mode)
         with self._cli_service.enter_mode(edit_snmp_mode) as edit_snmp_service:
-            output = CommandTemplateExecutor(edit_snmp_service, command_template.ENABLE_SNMP).execute_command(
-                snmp_community=snmp_community)
+            if write:
+                output = CommandTemplateExecutor(edit_snmp_service, command_template.ENABLE_SNMP_WRITE).execute_command(
+                    snmp_community=snmp_community)
+            else:
+                output = CommandTemplateExecutor(edit_snmp_service, command_template.ENABLE_SNMP_READ).execute_command(
+                    snmp_community=snmp_community)
         return output
 
     def disable_snmp(self):

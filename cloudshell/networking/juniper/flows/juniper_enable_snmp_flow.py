@@ -3,7 +3,7 @@ from cloudshell.devices.flows.cli_action_flows import EnableSnmpFlow
 from cloudshell.networking.juniper.cli.juniper_cli_handler import JuniperCliHandler
 from cloudshell.networking.juniper.command_actions.commit_rollback_actions import CommitRollbackActions
 from cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions import EnableDisableSnmpActions
-from cloudshell.snmp.snmp_parameters import SNMPV2ReadParameters
+from cloudshell.snmp.snmp_parameters import SNMPV2ReadParameters, SNMPV2WriteParameters
 
 
 class JuniperEnableSnmpFlow(EnableSnmpFlow):
@@ -19,7 +19,8 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         self._cli_handler = cli_handler
 
     def execute_flow(self, snmp_parameters):
-        if not isinstance(snmp_parameters, SNMPV2ReadParameters):
+        if not isinstance(snmp_parameters, SNMPV2ReadParameters) and not isinstance(snmp_parameters,
+                                                                                   SNMPV2WriteParameters):
             message = 'Unsupported SNMP version'
             self._logger.error(message)
             raise Exception(self.__class__.__name__, message)
@@ -36,7 +37,10 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
             if not snmp_actions.configured(snmp_community):
                 self._logger.debug('Configuring SNMP with community {}'.format(snmp_community))
                 try:
-                    output = snmp_actions.enable_snmp(snmp_community)
+                    if isinstance(snmp_parameters,SNMPV2WriteParameters):
+                        output = snmp_actions.enable_snmp(snmp_community, write=True)
+                    else:
+                        output = snmp_actions.enable_snmp(snmp_community, write=False)
                     output += commit_rollback.commit()
                     return output
                 except CommandExecutionException as exception:
