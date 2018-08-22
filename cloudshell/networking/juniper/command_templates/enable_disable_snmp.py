@@ -4,7 +4,9 @@ from cloudshell.cli.command_template.command_template import CommandTemplate
 ACTION_MAP = OrderedDict()
 ERROR_MAP = OrderedDict([(r'[Ee]rror:|ERROR:', 'Command error')])
 
-ENABLE_SNMP = CommandTemplate('set community {snmp_community} authorization read-only', action_map=ACTION_MAP,
+ENABLE_SNMP_READ = CommandTemplate('set community {snmp_community} authorization read-only', action_map=ACTION_MAP,
+                              error_map=ERROR_MAP)
+ENABLE_SNMP_WRITE = CommandTemplate('set community {snmp_community} authorization read-write', action_map=ACTION_MAP,
                               error_map=ERROR_MAP)
 DISABLE_SNMP = CommandTemplate('delete snmp', action_map=ACTION_MAP, error_map=ERROR_MAP)
 
