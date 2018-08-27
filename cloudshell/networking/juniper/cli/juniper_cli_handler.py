@@ -3,6 +3,8 @@
 
 from cloudshell.cli.command_mode_helper import CommandModeHelper
 from cloudshell.devices.cli_handler_impl import CliHandlerImpl
+from cloudshell.networking.juniper.cli.juniper_ssh_session import JuniperSSHSession
+from cloudshell.networking.juniper.cli.juniper_telnet_session import JuniperTelnetSession
 from cloudshell.networking.juniper.cli.junipr_command_modes import DefaultCommandMode, ConfigCommandMode
 
 
@@ -32,3 +34,10 @@ class JuniperCliHandler(CliHandlerImpl):
         :return:
         """
         return self.get_cli_service(self.config_mode)
+
+    def _ssh_session(self):
+        return JuniperSSHSession(self.resource_address, self.username, self.password, self.port, self.on_session_start)
+
+    def _telnet_session(self):
+        return JuniperTelnetSession(self.resource_address, self.username, self.password, self.port,
+                                    self.on_session_start)
