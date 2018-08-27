@@ -7,38 +7,38 @@ from cloudshell.cli.command_mode import CommandMode
 from cloudshell.shell.core.api_utils import decrypt_password
 
 
-class CliCommandMode(CommandMode):
-    PROMPT = r'%\s*$'
-    ENTER_COMMAND = ''
-    EXIT_COMMAND = 'exit'
-
-    def __init__(self, resource_config, api):
-        self.resource_config = resource_config
-        self._api = api
-        CommandMode.__init__(self, CliCommandMode.PROMPT, CliCommandMode.ENTER_COMMAND,
-                             CliCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
-                             exit_action_map=self.exit_action_map(), enter_error_map=self.enter_error_map(),
-                             exit_error_map=self.exit_error_map(), use_exact_prompt=True)
-
-    def enter_actions(self, cli_operations):
-        pass
-
-    def enter_action_map(self):
-        return OrderedDict()
-
-    def enter_error_map(self):
-        return OrderedDict()
-
-    def exit_action_map(self):
-        return OrderedDict()
-
-    def exit_error_map(self):
-        return OrderedDict()
+# class CliCommandMode(CommandMode):
+#     PROMPT = r'%\s*$'
+#     ENTER_COMMAND = ''
+#     EXIT_COMMAND = 'exit'
+#
+#     def __init__(self, resource_config, api):
+#         self.resource_config = resource_config
+#         self._api = api
+#         CommandMode.__init__(self, CliCommandMode.PROMPT, CliCommandMode.ENTER_COMMAND,
+#                              CliCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
+#                              exit_action_map=self.exit_action_map(), enter_error_map=self.enter_error_map(),
+#                              exit_error_map=self.exit_error_map(), use_exact_prompt=True)
+#
+#     def enter_actions(self, cli_operations):
+#         pass
+#
+#     def enter_action_map(self):
+#         return OrderedDict()
+#
+#     def enter_error_map(self):
+#         return OrderedDict()
+#
+#     def exit_action_map(self):
+#         return OrderedDict()
+#
+#     def exit_error_map(self):
+#         return OrderedDict()
 
 
 class DefaultCommandMode(CommandMode):
     PROMPT = r'>\s*$'
-    ENTER_COMMAND = 'cli'
+    ENTER_COMMAND = ''
     EXIT_COMMAND = 'exit'
 
     def __init__(self, resource_config, api):
@@ -68,7 +68,7 @@ class DefaultCommandMode(CommandMode):
 
 
 class ConfigCommandMode(CommandMode):
-    PROMPT = r'(\[edit\]\n.*#)\s*$'
+    PROMPT = r'(\[edit\]\s*.*#)\s*$'
     ENTER_COMMAND = 'configure'
     EXIT_COMMAND = 'exit'
 
@@ -96,17 +96,15 @@ class ConfigCommandMode(CommandMode):
 
 
 CommandMode.RELATIONS_DICT = {
-    CliCommandMode: {
-        DefaultCommandMode: {
-            ConfigCommandMode: {}
-        }
+    DefaultCommandMode: {
+        ConfigCommandMode: {}
     }
 }
 
 
 # Not mandatory modes
 class EditSnmpCommandMode(CommandMode):
-    PROMPT = r'\[edit snmp\]\n.*#\s*$'
+    PROMPT = r'\[edit snmp\]\s*.*#\s*$'
     ENTER_COMMAND = 'edit snmp'
     EXIT_COMMAND = 'exit'
 

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from cloudshell.cli.command_template.command_template import CommandTemplate
 
-ACTION_MAP = OrderedDict()
+ACTION_MAP = OrderedDict([])
 ERROR_MAP = OrderedDict([(r'[Ee]rror:|ERROR:', 'Command error'), (r'[Ss]yntax\s[Ee]rror', 'Command Syntax Error')])
 
 CREATE_VLAN = CommandTemplate('set vlans {vlan_name} vlan-id {vlan_id}', error_map=ERROR_MAP)
