@@ -177,6 +177,14 @@ class JuniperSnmpAutoload(object):
     SNMP_ERRORS = [r'No\s+Such\s+Object\s+currently\s+exists']
 
     def __init__(self, snmp_handler, shell_name, shell_type, resource_name, logger):
+        """
+        :param snmp_handler:
+        :param shell_name:
+        :param shell_type:
+        :param resource_name:
+        :param logger:
+        :type logger: logging.Logger
+        """
         self.shell_name = shell_name
         self.shell_type = shell_type
         self._content_indexes = None
@@ -613,11 +621,11 @@ class JuniperSnmpAutoload(object):
                 if generic_port.fpc_id > 0 and generic_port.fpc_id in self._modules:
                     fpc = self._modules.get(generic_port.fpc_id)
                     if fpc and int(generic_port.pic_id) > 0:
-                        pic = self._get_pic_by_index(fpc, int(generic_port.pic_id))[0]
+                        pic = self._get_pic_by_index(fpc, int(generic_port.pic_id))
                         if pic:
                             pic.add_sub_resource(generic_port.port_phis_id, port)
                         else:
-                            self.logger.info('Port {} is not allowed'.format(port.name))
+                            self.logger.warning('Port {} is not associated with any pic'.format(port.name))
                     else:
                         fpc.add_sub_resource(generic_port.port_phis_id, port)
                 else:
@@ -625,9 +633,9 @@ class JuniperSnmpAutoload(object):
                     chassis.add_sub_resource(generic_port.port_phis_id, port)
 
     def _get_pic_by_index(self, fpc, index):
-        for element_id, pic in fpc.resources.get("SM", {}).iteritems():
+        for element_id, pic_list in fpc.resources.get("SM", {}).iteritems():
             if int(element_id) == index:
-                return pic
+                return pic_list[0]
         return None
 
     def _is_valid_device_os(self, supported_os):
