@@ -65,8 +65,8 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         snmp_v3_actions = EnableDisableSnmpV3Actions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         snmp_user = snmp_parameters.snmp_user
-        snmp_password = snmp_parameters.snmp_password
-        snmp_priv_key = snmp_parameters.snmp_private_key
+        snmp_password = snmp_parameters.snmp_password or None
+        snmp_priv_key = snmp_parameters.snmp_private_key or None
         snmp_auth_proto = {value: key for key, value in snmp_parameters.AUTH_PROTOCOL_MAP.iteritems()}.get(
             snmp_parameters.auth_protocol, snmp_v3_actions.AUTH_SHA)
         snmp_priv_proto = {value: key for key, value in snmp_parameters.PRIV_PROTOCOL_MAP.iteritems()}.get(
