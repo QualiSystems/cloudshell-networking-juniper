@@ -1,6 +1,5 @@
 from cloudshell.cli.cli_service_impl import CliServiceImpl as CliService
 from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
-from cloudshell.networking.juniper.cli.junipr_command_modes import EditSnmpCommandMode
 from cloudshell.networking.juniper.command_templates import enable_disable_snmp as command_template
 
 
@@ -24,7 +23,7 @@ class EnableDisableSnmpActions(object):
         :return:
         """
         snmp_community_info = CommandTemplateExecutor(self._cli_service,
-                                                      command_template.SHOW_SNMP_COMUNITY).execute_command(
+                                                      command_template.SHOW_SNMP_COMMUNITY).execute_command(
             snmp_community=snmp_community)
 
         if "authorization read" in snmp_community_info:
@@ -38,21 +37,21 @@ class EnableDisableSnmpActions(object):
         Enable snmp on the device
         :return:
         """
-        edit_snmp_mode = EditSnmpCommandMode()
-        self._cli_service.command_mode.add_child_node(edit_snmp_mode)
-        with self._cli_service.enter_mode(edit_snmp_mode) as edit_snmp_service:
-            if write:
-                output = CommandTemplateExecutor(edit_snmp_service, command_template.ENABLE_SNMP_WRITE).execute_command(
-                    snmp_community=snmp_community)
-            else:
-                output = CommandTemplateExecutor(edit_snmp_service, command_template.ENABLE_SNMP_READ).execute_command(
-                    snmp_community=snmp_community)
+        output = CommandTemplateExecutor(self._cli_service, command_template.CREATE_VIEW).execute_command()
+        if write:
+            output += CommandTemplateExecutor(self._cli_service, command_template.ENABLE_SNMP_WRITE).execute_command(
+                snmp_community=snmp_community)
+        else:
+            output += CommandTemplateExecutor(self._cli_service, command_template.ENABLE_SNMP_READ).execute_command(
+                snmp_community=snmp_community)
         return output
 
-    def disable_snmp(self):
+    def disable_snmp(self, snmp_community):
         """
         Disable SNMP
         :return:
         """
-        output = CommandTemplateExecutor(self._cli_service, command_template.DISABLE_SNMP).execute_command()
+        output = CommandTemplateExecutor(self._cli_service, command_template.DISABLE_SNMP).execute_command(
+            snmp_community=snmp_community)
+        output += CommandTemplateExecutor(self._cli_service, command_template.DELETE_VIEW).execute_command()
         return output

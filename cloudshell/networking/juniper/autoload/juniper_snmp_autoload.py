@@ -642,7 +642,6 @@ class JuniperSnmpAutoload(object):
         """Validate device OS using snmp
             :return: True or False
         """
-
         system_description = self.snmp_handler.get_property('SNMPv2-MIB', 'sysDescr', '0')
         system_description += self.snmp_handler.get_property('JUNIPER-MIB', 'jnxBoxDescr', '0')
         self.logger.debug('Detected system description: \'{0}\''.format(system_description))
