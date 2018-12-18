@@ -28,6 +28,8 @@ class JuniperDisableSnmpFlow(DisableSnmpFlow):
 
     def _disable_snmp(self, cli_service, snmp_parameters):
         snmp_community = snmp_parameters.snmp_community
+        if not snmp_community:
+            raise Exception(self.__class__.__name__, "SNMP Community has to be defined")
         snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         try:
