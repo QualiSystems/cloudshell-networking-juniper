@@ -20,17 +20,6 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         self._cli_handler = cli_handler
 
     def execute_flow(self, snmp_parameters):
-        # if not isinstance(snmp_parameters, SNMPV2ReadParameters) and not isinstance(snmp_parameters,
-        #                                                                            SNMPV2WriteParameters):
-        #     message = 'Unsupported SNMP version'
-        #     self._logger.error(message)
-        #     raise Exception(self.__class__.__name__, message)
-        #
-        # if not snmp_parameters.snmp_community:
-        #     message = 'SNMP community cannot be empty'
-        #     self._logger.error(message)
-        #     raise Exception(self.__class__.__name__, message)
-
         with self._cli_handler.config_mode_service() as cli_service:
             if isinstance(snmp_parameters, SNMPV3Parameters):
                 self._enable_snmp_v3(cli_service, snmp_parameters)
@@ -43,6 +32,8 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         :type snmp_parameters: cloudshell.snmp.snmp_parameters.SNMPParameters
         """
         snmp_community = snmp_parameters.snmp_community
+        if not snmp_community:
+            raise Exception(self.__class__.__name__, "SNMP Community has to be defined")
         snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         if not snmp_actions.configured(snmp_community):
