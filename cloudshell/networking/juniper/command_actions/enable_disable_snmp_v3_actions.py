@@ -1,32 +1,33 @@
 from cloudshell.cli.cli_service_impl import CliServiceImpl as CliService
 from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
 from cloudshell.networking.juniper.command_templates import enable_disable_snmp_v3 as command_template
+from cloudshell.snmp.snmp_parameters import SNMPV3Parameters
 
 
 class EnableDisableSnmpV3Actions(object):
-    AUTH_NO_AUTH = "No Authentication Protocol"
-    AUTH_MD5 = "MD5"
-    AUTH_SHA = "SHA"
-
-    PRIV_NO_PRIV = "No Privacy Protocol"
-    PRIV_DES = "DES"
-    PRIV_3DES = "3DES-EDE"
-    PRIV_AES128 = "AES-128"
-    PRIV_AES192 = "AES-192"
-    PRIV_AES256 = "AES-256"
+    # AUTH_NO_AUTH = "No Authentication Protocol"
+    # AUTH_MD5 = "MD5"
+    # AUTH_SHA = "SHA"
+    #
+    # PRIV_NO_PRIV = "No Privacy Protocol"
+    # PRIV_DES = "DES"
+    # PRIV_3DES = "3DES-EDE"
+    # PRIV_AES128 = "AES-128"
+    # PRIV_AES192 = "AES-192"
+    # PRIV_AES256 = "AES-256"
 
     AUTH_COMMAND_TABLE = {
-        AUTH_NO_AUTH: command_template.SET_AUTH_NONE,
-        AUTH_MD5: command_template.SET_AUTH_MD5,
-        AUTH_SHA: command_template.SET_AUTH_SHA
+        SNMPV3Parameters.AUTH_NO_AUTH: command_template.SET_AUTH_NONE,
+        SNMPV3Parameters.AUTH_MD5: command_template.SET_AUTH_MD5,
+        SNMPV3Parameters.AUTH_SHA: command_template.SET_AUTH_SHA
     }
     PRIV_COMMAND_TABLE = {
-        PRIV_NO_PRIV: command_template.SET_PRIV_NONE,
-        PRIV_DES: command_template.SET_PRIV_DES,
-        PRIV_3DES: command_template.SET_PRIV_3DES,
-        PRIV_AES128: command_template.SET_PRIV_AES128,
-        PRIV_AES192: command_template.SET_PRIV_AES192,
-        PRIV_AES256: command_template.SET_PRIV_AES256
+        SNMPV3Parameters.PRIV_NO_PRIV: command_template.SET_PRIV_NONE,
+        SNMPV3Parameters.PRIV_DES: command_template.SET_PRIV_DES,
+        SNMPV3Parameters.PRIV_3DES: command_template.SET_PRIV_3DES,
+        SNMPV3Parameters.PRIV_AES128: command_template.SET_PRIV_AES128,
+        SNMPV3Parameters.PRIV_AES192: command_template.SET_PRIV_AES192,
+        SNMPV3Parameters.PRIV_AES256: command_template.SET_PRIV_AES256
     }
 
     ACCESS_VIEW_COMMAND_LIST = [command_template.SET_ACCESS_NONE_READ, command_template.SET_ACCESS_NONE_WRITE,
