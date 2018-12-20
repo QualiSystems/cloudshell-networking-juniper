@@ -20,4 +20,4 @@ class JuniperConfigurationRunner(ConfigurationRunner):
 
     @property
     def file_system(self):
-        return ""
+        return "local:"
