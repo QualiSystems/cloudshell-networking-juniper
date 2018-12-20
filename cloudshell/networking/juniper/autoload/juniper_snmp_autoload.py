@@ -5,7 +5,8 @@ import os
 import re
 
 from cloudshell.devices.autoload.autoload_builder import AutoloadDetailsBuilder
-from cloudshell.devices.standards.networking.autoload_structure import *
+import cloudshell.devices.standards.networking.autoload_structure as networking_model
+import cloudshell.devices.standards.firewall.autoload_structure as firewall_model
 
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper
 
@@ -36,6 +37,7 @@ class JuniperGenericPort(object):
         self.index = index
         self._snmp_handler = snmp_handler
         self._resource_name = resource_name
+        self.resource_model = firewall_model if self.shell_type in firewall_model.AVAILABLE_SHELL_TYPES else networking_model
 
         self._port_phis_id = None
         self._port_name = None
@@ -130,9 +132,9 @@ class JuniperGenericPort(object):
         Build Port instance using collected information
         :return:
         """
-        port = GenericPort(shell_name=self.shell_name,
-                           name=AddRemoveVlanHelper.convert_port_name(self.port_name),
-                           unique_id='{0}.{1}.{2}'.format(self._resource_name, 'port', self.index))
+        port = self.resource_model.GenericPort(shell_name=self.shell_name,
+                                               name=AddRemoveVlanHelper.convert_port_name(self.port_name),
+                                               unique_id='{0}.{1}.{2}'.format(self._resource_name, 'port', self.index))
 
         port.port_description = self.port_description
         port.l2_protocol_type = self.type
@@ -153,11 +155,11 @@ class JuniperGenericPort(object):
         :return:
         """
         port_name = AddRemoveVlanHelper.convert_port_name(self.port_name)
-        port_channel = GenericPortChannel(shell_name=self.shell_name,
-                                          name=port_name,
-                                          unique_id='{0}.{1}.{2}'.format(self._resource_name,
-                                                                         'port_channel',
-                                                                         self.index))
+        port_channel = self.resource_model.GenericPortChannel(shell_name=self.shell_name,
+                                                              name=port_name,
+                                                              unique_id='{0}.{1}.{2}'.format(self._resource_name,
+                                                                                             'port_channel',
+                                                                                             self.index))
 
         port_channel.port_description = self.port_description
         port_channel.ipv4_address = self._get_associated_ipv4_address()
@@ -193,11 +195,12 @@ class JuniperSnmpAutoload(object):
         self._snmp_handler = snmp_handler
         self._resource_name = resource_name
         self._initialize_snmp_handler()
+        self.resource_model = firewall_model if self.shell_type in firewall_model.AVAILABLE_SHELL_TYPES else networking_model
 
-        self.resource = GenericResource(shell_name=shell_name,
-                                        shell_type=shell_type,
-                                        name=resource_name,
-                                        unique_id=resource_name)
+        self.resource = self.resource_model.GenericResource(shell_name=shell_name,
+                                                            shell_type=shell_type,
+                                                            name=resource_name,
+                                                            unique_id=resource_name)
         self._chassis = {}
         self._modules = {}
         self.sub_modules = {}
@@ -362,9 +365,10 @@ class JuniperSnmpAutoload(object):
 
                 self._chassis_indexes.append(chassis_id)
 
-                chassis = GenericChassis(shell_name=self.shell_name,
-                                         name="Chassis {}".format(chassis_id),
-                                         unique_id="{0}.{1}.{2}".format(self._resource_name, "chassis", index))
+                chassis = self.resource_model.GenericChassis(shell_name=self.shell_name,
+                                                             name="Chassis {}".format(chassis_id),
+                                                             unique_id="{0}.{1}.{2}".format(self._resource_name,
+                                                                                            "chassis", index))
                 chassis.model = self._get_element_model(content_data)
                 chassis.serial_number = content_data.get("jnxContentsSerialNo")
 
@@ -395,9 +399,10 @@ class JuniperSnmpAutoload(object):
                     continue
                 self._power_port_indexes.append(power_port_id)
 
-                power_port = GenericPowerPort(shell_name=self.shell_name,
-                                              name="PP{}".format(power_port_id),
-                                              unique_id="{0}.{1}.{2}".format(self._resource_name, "power_port", index))
+                power_port = self.resource_model.GenericPowerPort(shell_name=self.shell_name,
+                                                                  name="PP{}".format(power_port_id),
+                                                                  unique_id="{0}.{1}.{2}".format(self._resource_name,
+                                                                                                 "power_port", index))
 
                 power_port.model = self._get_element_model(content_data)
                 power_port.port_description = content_data.get("jnxContentsDescr")
@@ -432,9 +437,10 @@ class JuniperSnmpAutoload(object):
                 if module_id in self._modules:
                     continue
 
-                module = GenericModule(shell_name=self.shell_name,
-                                       name="Module {}".format(module_id),
-                                       unique_id="{0}.{1}.{2}".format(self._resource_name, "module", index))
+                module = self.resource_model.GenericModule(shell_name=self.shell_name,
+                                                           name="Module {}".format(module_id),
+                                                           unique_id="{0}.{1}.{2}".format(self._resource_name, "module",
+                                                                                          index))
 
                 module.model = self._get_element_model(content_data)
                 module.serial_number = content_data.get("jnxContentsSerialNo")
@@ -467,9 +473,10 @@ class JuniperSnmpAutoload(object):
                 parent_id = index2
                 sub_module_id = index3
 
-                sub_module = GenericSubModule(shell_name=self.shell_name,
-                                              name="SubModule {}".format(sub_module_id),
-                                              unique_id="{0}.{1}.{2}".format(self._resource_name, "sub_module", index))
+                sub_module = self.resource_model.GenericSubModule(shell_name=self.shell_name,
+                                                                  name="SubModule {}".format(sub_module_id),
+                                                                  unique_id="{0}.{1}.{2}".format(self._resource_name,
+                                                                                                 "sub_module", index))
 
                 sub_module.model = self._get_element_model(content_data)
                 sub_module.serial_number = content_data.get("jnxContentsSerialNo")
