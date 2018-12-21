@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from cloudshell.cli.command_template.command_template import CommandTemplate
 from cloudshell.networking.juniper.command_templates.generic_action_error_map import ACTION_MAP, ERROR_MAP
 
@@ -10,21 +12,24 @@ SET_AUTH_MD5 = CommandTemplate(
     'set snmp v3 usm local-engine user {user} authentication-md5 authentication-password {password}',
     action_map=ACTION_MAP, error_map=ERROR_MAP)
 
+_PRIV_ERROR_MAP = OrderedDict([(r'[Ll]ength\s\d+\sis\snot\swithin\srange', 'Private key is too short')])
+_PRIV_ERROR_MAP.update(ERROR_MAP)
+
 SET_PRIV_NONE = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-none',
                                 action_map=ACTION_MAP, error_map=ERROR_MAP)
 
 SET_PRIV_DES = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-des privacy-password {password}',
-                               action_map=ACTION_MAP, error_map=ERROR_MAP)
+                               action_map=ACTION_MAP, error_map=_PRIV_ERROR_MAP)
 
 SET_PRIV_3DES = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-3des privacy-password {password}',
-                                action_map=ACTION_MAP, error_map=ERROR_MAP)
+                                action_map=ACTION_MAP, error_map=_PRIV_ERROR_MAP)
 
 SET_PRIV_AES128 = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-aes128 privacy-password {password}',
-                                  action_map=ACTION_MAP, error_map=ERROR_MAP)
+                                  action_map=ACTION_MAP, error_map=_PRIV_ERROR_MAP)
 SET_PRIV_AES192 = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-aes192 privacy-password {password}',
-                                  action_map=ACTION_MAP, error_map=ERROR_MAP)
+                                  action_map=ACTION_MAP, error_map=_PRIV_ERROR_MAP)
 SET_PRIV_AES256 = CommandTemplate('set snmp v3 usm local-engine user {user} privacy-aes256 privacy-password {password}',
-                                  action_map=ACTION_MAP, error_map=ERROR_MAP)
+                                  action_map=ACTION_MAP, error_map=_PRIV_ERROR_MAP)
 
 SET_GROUP = CommandTemplate(
     'set snmp v3 vacm security-to-group security-model usm security-name {user} group {group}',
