@@ -33,7 +33,7 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
         """
         snmp_community = snmp_parameters.snmp_community
         if not snmp_community:
-            raise Exception(self.__class__.__name__, "SNMP Community has to be defined")
+            raise Exception("SNMP Community has to be defined")
         snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         if not snmp_actions.configured(snmp_community):
@@ -43,10 +43,10 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
                                                   write=isinstance(snmp_parameters, SNMPV2WriteParameters))
                 output += commit_rollback.commit()
                 return output
-            except CommandExecutionException as exception:
+            except CommandExecutionException:
                 commit_rollback.rollback()
-                self._logger.error(exception)
-                raise exception
+                self._logger.exception('Failed to enable SNMP')
+                raise
 
     def _enable_snmp_v3(self, cli_service, snmp_parameters):
         """
@@ -66,7 +66,7 @@ class JuniperEnableSnmpFlow(EnableSnmpFlow):
                                                     snmp_priv_proto)
             commit_rollback.commit()
             return output
-        except CommandExecutionException as exception:
+        except CommandExecutionException:
             commit_rollback.rollback()
-            self._logger.error(exception)
-            raise exception
+            self._logger.exception('Failed to enable SNMPv3')
+            raise
