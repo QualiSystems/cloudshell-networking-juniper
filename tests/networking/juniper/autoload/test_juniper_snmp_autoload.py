@@ -8,124 +8,168 @@ from mock import MagicMock as Mock, patch, call
 
 
 class TestJuniperSnmpAutoload(TestCase):
+    FIREWALL_SHELL = 'CS_Firewall'
+    SWITCH_SHELL = 'CS_Switch'
+    ROUTER_SHELL = 'CS_Router'
+    NETWORKING_MODEL_TYPES = [SWITCH_SHELL, ROUTER_SHELL]
+    FIREWALL_MODEL_TYPES = [FIREWALL_SHELL]
+
     def setUp(self):
         self._snmp_handler = Mock()
         self._shell_name = Mock()
-        self._shell_type = Mock()
         self._resource_name = Mock()
         self._logger = Mock()
         self._supported_os = Mock()
-        # self._cli_service = Mock()
-        # self._snmp_community = Mock()
         self._resource = Mock()
-        self._autoload_operations_instance = self._create_instance()
 
-    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.GenericResource')
-    @patch(
-        'cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperSnmpAutoload._initialize_snmp_handler')
-    def _create_instance(self, initialize_snmp, generic_resource):
-        generic_resource.return_value = self._resource
-        instance = JuniperSnmpAutoload(self._snmp_handler, self._shell_name, self._shell_type,
+    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.firewall_model')
+    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.networking_model')
+    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperSnmpAutoload._initialize_snmp_handler')
+    def _create_instance(self, initialize_snmp_handler, networking_model, firewall_model, shell_type=SWITCH_SHELL):
+        networking_model.AVAILABLE_SHELL_TYPES = self.NETWORKING_MODEL_TYPES
+        firewall_model.AVAILABLE_SHELL_TYPES = self.FIREWALL_MODEL_TYPES
+        if shell_type in self.NETWORKING_MODEL_TYPES:
+            model = networking_model
+        else:
+            model = firewall_model
+        model.GenericResource.return_value = self._resource
+
+        instance = JuniperSnmpAutoload(self._snmp_handler, self._shell_name, shell_type,
                                        self._resource_name, self._logger)
-        generic_resource.assert_called_once_with(shell_name=self._shell_name,
-                                                 shell_type=self._shell_type,
-                                                 name=self._resource_name,
-                                                 unique_id=self._resource_name)
-        initialize_snmp.assert_called_once_with()
+
+        model.GenericResource.assert_called_once_with(shell_name=self._shell_name,
+                                                      shell_type=shell_type,
+                                                      name=self._resource_name,
+                                                      unique_id=self._resource_name)
+        initialize_snmp_handler.assert_called_once_with()
         return instance
 
-    def _mock_methods(self):
-        self._autoload_operations_instance._is_valid_device_os = Mock()
-        self._autoload_operations_instance.enable_snmp = Mock()
-        self._autoload_operations_instance.disable_snmp = Mock()
-        self._autoload_operations_instance._build_root = Mock()
-        self._autoload_operations_instance._build_chassis = Mock()
-        self._autoload_operations_instance._build_power_modules = Mock()
-        self._autoload_operations_instance._build_modules = Mock()
-        self._autoload_operations_instance._build_sub_modules = Mock()
-        self._autoload_operations_instance._build_ports = Mock()
-        self._autoload_operations_instance._root = Mock()
-        self._autoload_operations_instance._log_autoload_details = Mock()
+    def _mock_methods(self, instance):
+        instance._is_valid_device_os = Mock()
+        instance.enable_snmp = Mock()
+        instance.disable_snmp = Mock()
+        instance._build_root = Mock()
+        instance._build_chassis = Mock()
+        instance._build_power_modules = Mock()
+        instance._build_modules = Mock()
+        instance._build_sub_modules = Mock()
+        instance._build_ports = Mock()
+        instance._root = Mock()
+        instance._log_autoload_details = Mock()
 
-    def test_init(self):
-        self.assertIs(self._autoload_operations_instance.shell_name, self._shell_name)
-        self.assertIs(self._autoload_operations_instance.shell_type, self._shell_type)
-        self.assertIsNone(self._autoload_operations_instance._content_indexes)
-        self.assertIsNone(self._autoload_operations_instance._if_indexes)
-        self.assertIs(self._autoload_operations_instance._logger, self._logger)
-        self.assertIs(self._autoload_operations_instance._snmp_handler, self._snmp_handler)
-        self.assertIs(self._autoload_operations_instance._resource_name, self._resource_name)
-        self.assertIs(self._autoload_operations_instance.resource, self._resource)
-        self.assertEqual(self._autoload_operations_instance._chassis, {})
-        self.assertEqual(self._autoload_operations_instance._modules, {})
-        self.assertEqual(self._autoload_operations_instance.sub_modules, {})
-        self.assertEqual(self._autoload_operations_instance._ports, {})
-        self.assertEqual(self._autoload_operations_instance._logical_generic_ports, {})
-        self.assertEqual(self._autoload_operations_instance._physical_generic_ports, {})
-        self.assertIsNone(self._autoload_operations_instance._generic_physical_ports_by_name)
-        self.assertIsNone(self._autoload_operations_instance._generic_logical_ports_by_name)
-        self.assertIsNone(self._autoload_operations_instance._ipv4_table)
-        self.assertIsNone(self._autoload_operations_instance._ipv6_table)
-        self.assertIsNone(self._autoload_operations_instance._if_duplex_table)
-        self.assertIsNone(self._autoload_operations_instance._autoneg)
-        self.assertIsNone(self._autoload_operations_instance._lldp_keys)
+    def test_init_firewall(self):
+        instance = self._create_instance(shell_type=self.FIREWALL_SHELL)
+        self.assertIs(instance.shell_name, self._shell_name)
+        self.assertIs(instance.shell_type, self.FIREWALL_SHELL)
+        self.assertIs(instance.shell_type, self.FIREWALL_SHELL)
+        self.assertIsNone(instance._content_indexes)
+        self.assertIsNone(instance._if_indexes)
+        self.assertIs(instance._logger, self._logger)
+        self.assertIs(instance._snmp_handler, self._snmp_handler)
+        self.assertIs(instance._resource_name, self._resource_name)
+        self.assertIs(instance.resource, self._resource)
+        self.assertEqual(instance._chassis, {})
+        self.assertEqual(instance._modules, {})
+        self.assertEqual(instance.sub_modules, {})
+        self.assertEqual(instance._ports, {})
+        self.assertEqual(instance._logical_generic_ports, {})
+        self.assertEqual(instance._physical_generic_ports, {})
+        self.assertIsNone(instance._generic_physical_ports_by_name)
+        self.assertIsNone(instance._generic_logical_ports_by_name)
+        self.assertIsNone(instance._ipv4_table)
+        self.assertIsNone(instance._ipv6_table)
+        self.assertIsNone(instance._if_duplex_table)
+        self.assertIsNone(instance._autoneg)
+        self.assertIsNone(instance._lldp_keys)
+
+    def test_init_switch(self):
+        instance = self._create_instance(shell_type=self.SWITCH_SHELL)
+        self.assertIs(instance.shell_name, self._shell_name)
+        self.assertIs(instance.shell_type, self.SWITCH_SHELL)
+        self.assertIsNone(instance._content_indexes)
+        self.assertIsNone(instance._if_indexes)
+        self.assertIs(instance._logger, self._logger)
+        self.assertIs(instance._snmp_handler, self._snmp_handler)
+        self.assertIs(instance._resource_name, self._resource_name)
+        self.assertIs(instance.resource, self._resource)
+        self.assertEqual(instance._chassis, {})
+        self.assertEqual(instance._modules, {})
+        self.assertEqual(instance.sub_modules, {})
+        self.assertEqual(instance._ports, {})
+        self.assertEqual(instance._logical_generic_ports, {})
+        self.assertEqual(instance._physical_generic_ports, {})
+        self.assertIsNone(instance._generic_physical_ports_by_name)
+        self.assertIsNone(instance._generic_logical_ports_by_name)
+        self.assertIsNone(instance._ipv4_table)
+        self.assertIsNone(instance._ipv6_table)
+        self.assertIsNone(instance._if_duplex_table)
+        self.assertIsNone(instance._autoneg)
+        self.assertIsNone(instance._lldp_keys)
 
     def test_logger_property(self):
-        self.assertIs(self._autoload_operations_instance.logger, self._logger)
+        instance = self._create_instance()
+        self.assertIs(instance.logger, self._logger)
 
     def test_snm_handler_property(self):
-        self.assertIs(self._autoload_operations_instance.snmp_handler, self._snmp_handler)
+        instance = self._create_instance()
+        self.assertIs(instance.snmp_handler, self._snmp_handler)
 
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.sort_elements_by_attributes')
     def test_ipv4_table_prop(self, sort_elements_by_attributes):
+        instance = self._create_instance()
         table = Mock()
         sort_elements_by_attributes.return_value = table
         walk_result = Mock()
         self._snmp_handler.walk.return_value = walk_result
-        self.assertIs(self._autoload_operations_instance.ipv4_table, table)
-        self.assertIs(self._autoload_operations_instance.ipv4_table, table)
+        self.assertIs(instance.ipv4_table, table)
+        self.assertIs(instance.ipv4_table, table)
         self._snmp_handler.walk.assert_called_once_with(('IP-MIB', 'ipAddrTable'))
         sort_elements_by_attributes.assert_called_once_with(walk_result, 'ipAdEntIfIndex')
 
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.sort_elements_by_attributes')
     def test_ipv6_table_prop(self, sort_elements_by_attributes):
+        instance = self._create_instance()
         table = Mock()
         sort_elements_by_attributes.return_value = table
         walk_result = Mock()
         self._snmp_handler.walk.return_value = walk_result
-        self.assertIs(self._autoload_operations_instance.ipv6_table, table)
-        self.assertIs(self._autoload_operations_instance.ipv6_table, table)
+        self.assertIs(instance.ipv6_table, table)
+        self.assertIs(instance.ipv6_table, table)
         self._snmp_handler.walk.assert_called_once_with(('IPV6-MIB', 'ipv6AddrEntry'))
         sort_elements_by_attributes.assert_called_once_with(walk_result, 'ipAdEntIfIndex')
 
     def test_generic_physical_ports_by_name_prop(self):
+        instance = self._create_instance()
         port1 = Mock()
         port2 = Mock()
-        self._autoload_operations_instance._physical_generic_ports = {Mock(): port1, Mock(): port2}
-        result1 = self._autoload_operations_instance.generic_physical_ports_by_name
-        result2 = self._autoload_operations_instance.generic_physical_ports_by_name
+        instance._physical_generic_ports = {Mock(): port1, Mock(): port2}
+        result1 = instance.generic_physical_ports_by_name
+        result2 = instance.generic_physical_ports_by_name
         self.assertIs(result1, result2)
         self.assertEqual(result1, {port1.port_name: port1, port2.port_name: port2})
 
     def test_generic_logical_ports_by_name_prop(self):
+        instance = self._create_instance()
         port1 = Mock()
         port2 = Mock()
-        self._autoload_operations_instance._logical_generic_ports = {Mock(): port1, Mock(): port2}
-        result1 = self._autoload_operations_instance.generic_logical_ports_by_name
-        result2 = self._autoload_operations_instance.generic_logical_ports_by_name
+        instance._logical_generic_ports = {Mock(): port1, Mock(): port2}
+        result1 = instance.generic_logical_ports_by_name
+        result2 = instance.generic_logical_ports_by_name
         self.assertIs(result1, result2)
         self.assertEqual(result1, {port1.port_name: port1, port2.port_name: port2})
 
     def test_lldp_keys_prop(self):
+        instance = self._create_instance()
         result = Mock()
-        self._autoload_operations_instance._build_lldp_keys = Mock()
-        self._autoload_operations_instance._build_lldp_keys.return_value = result
-        self.assertIs(self._autoload_operations_instance.lldp_keys, result)
-        self.assertIs(self._autoload_operations_instance.lldp_keys, result)
-        self._autoload_operations_instance._build_lldp_keys.assert_called_once_with()
+        instance._build_lldp_keys = Mock()
+        instance._build_lldp_keys.return_value = result
+        self.assertIs(instance.lldp_keys, result)
+        self.assertIs(instance.lldp_keys, result)
+        instance._build_lldp_keys.assert_called_once_with()
 
     def test_initialize_snmp_handler(self):
-        self._autoload_operations_instance._initialize_snmp_handler()
+        instance = self._create_instance()
+        instance._initialize_snmp_handler()
         path = os.path.abspath(
             os.path.join(os.path.dirname(sys.modules[JuniperSnmpAutoload.__module__].__file__), '..', 'mibs'))
         self._snmp_handler.update_mib_sources.assert_called_once_with(path)
@@ -133,9 +177,10 @@ class TestJuniperSnmpAutoload(TestCase):
                  call('IEEE8023-LAG-MIB'),
                  call('EtherLike-MIB'), call('IP-MIB'), call('IPV6-MIB'), call('LLDP-MIB')]
         self._snmp_handler.load_mib.assert_has_calls(calls)
-        self._snmp_handler.set_snmp_errors.assert_called_once_with(self._autoload_operations_instance.SNMP_ERRORS)
+        self._snmp_handler.set_snmp_errors.assert_called_once_with(instance.SNMP_ERRORS)
 
     def test_build_root(self):
+        instance = self._create_instance()
         vendor = 'Test_Vendor'
         model = 'Tets_Model'
         version = '12.1R6.5'
@@ -147,10 +192,10 @@ class TestJuniperSnmpAutoload(TestCase):
                                                        contact_name,
                                                        system_name,
                                                        location]
-        self._autoload_operations_instance._build_root()
-        self.assertIs(self._autoload_operations_instance.resource.contact_name, contact_name)
-        self.assertIs(self._autoload_operations_instance.resource.system_name, system_name)
-        self.assertIs(self._autoload_operations_instance.resource.location, location)
+        instance._build_root()
+        self.assertIs(instance.resource.contact_name, contact_name)
+        self.assertIs(instance.resource.system_name, system_name)
+        self.assertIs(instance.resource.location, location)
         self.assertEqual(self._resource.os_version, version)
         self.assertEqual(self._resource.vendor, vendor.capitalize())
         self.assertEqual(self._resource.model, model)
@@ -160,6 +205,7 @@ class TestJuniperSnmpAutoload(TestCase):
         self._snmp_handler.get_property.assert_has_calls(calls)
 
     def test_build_root2(self):
+        instance = self._create_instance()
         vendor = 'Test_Vendor'
         model = 'Tets_Model'
         version = '12.1R6.5'
@@ -174,11 +220,11 @@ class TestJuniperSnmpAutoload(TestCase):
             location
         ]
 
-        self._autoload_operations_instance._build_root()
+        instance._build_root()
 
-        self.assertIs(self._autoload_operations_instance.resource.contact_name, contact_name)
-        self.assertIs(self._autoload_operations_instance.resource.system_name, system_name)
-        self.assertIs(self._autoload_operations_instance.resource.location, location)
+        self.assertIs(instance.resource.contact_name, contact_name)
+        self.assertIs(instance.resource.system_name, system_name)
+        self.assertIs(instance.resource.location, location)
         self.assertEqual(self._resource.os_version, version)
         self.assertEqual(self._resource.vendor, vendor.capitalize())
         self.assertEqual(self._resource.model, model)
@@ -188,6 +234,7 @@ class TestJuniperSnmpAutoload(TestCase):
         self._snmp_handler.get_property.assert_has_calls(calls)
 
     def test_get_content_indexes(self):
+        instance = self._create_instance()
         index1 = 1
         index2 = 2
         index3 = 3
@@ -198,42 +245,45 @@ class TestJuniperSnmpAutoload(TestCase):
         value4 = {'jnxContentsContainerIndex': 6}
         container_indexes = {index1: value1, index2: value2, index3: value3, index4: value4}
         self._snmp_handler.walk.return_value = container_indexes
-        self.assertEqual(self._autoload_operations_instance._get_content_indexes(), {4: [1], 5: [2], 6: [3, 4]})
+        self.assertEqual(instance._get_content_indexes(), {4: [1], 5: [2], 6: [3, 4]})
         self._snmp_handler.walk.assert_called_once_with(('JUNIPER-MIB', 'jnxContentsContainerIndex'))
 
     def test_content_indexes_prop(self):
+        instance = self._create_instance()
         value = Mock()
-        self._autoload_operations_instance._get_content_indexes = Mock()
-        self._autoload_operations_instance._get_content_indexes.return_value = value
-        self.assertIs(self._autoload_operations_instance.content_indexes, value)
-        self.assertIs(self._autoload_operations_instance.content_indexes, value)
-        self._autoload_operations_instance._get_content_indexes.assert_called_once_with()
+        instance._get_content_indexes = Mock()
+        instance._get_content_indexes.return_value = value
+        self.assertIs(instance.content_indexes, value)
+        self.assertIs(instance.content_indexes, value)
+        instance._get_content_indexes.assert_called_once_with()
 
     def test_if_indexes(self):
+        instance = self._create_instance()
         result = Mock()
         value = Mock()
         value.keys.return_value = result
         self._snmp_handler.walk.return_value = value
-        self.assertIs(self._autoload_operations_instance.if_indexes, result)
-        self.assertIs(self._autoload_operations_instance.if_indexes, result)
+        self.assertIs(instance.if_indexes, result)
+        self.assertIs(instance.if_indexes, result)
         self._snmp_handler.walk.assert_called_once_with(('JUNIPER-IF-MIB', 'ifChassisPort'))
         value.keys.assert_called_once_with()
 
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.AutoloadDetailsBuilder')
     def test_discover(self, autoload_details_builder_class):
+        instance = self._create_instance()
         autoload_details_builder = Mock()
         autoload_details_builder_class.return_value = autoload_details_builder
         autoload_details = Mock()
         autoload_details_builder.autoload_details.return_value = autoload_details
-        self._mock_methods()
-        self.assertIs(self._autoload_operations_instance.discover(self._supported_os), autoload_details)
-        self._autoload_operations_instance._is_valid_device_os.assert_called_once_with(self._supported_os)
-        self._autoload_operations_instance._build_root.assert_called_once_with()
-        self._autoload_operations_instance._build_chassis.assert_called_once_with()
-        self._autoload_operations_instance._build_power_modules.assert_called_once_with()
-        self._autoload_operations_instance._build_modules.assert_called_once_with()
-        self._autoload_operations_instance._build_sub_modules.assert_called_once_with()
-        self._autoload_operations_instance._build_ports.assert_called_once_with()
-        self._autoload_operations_instance._log_autoload_details.assert_called_once_with(autoload_details)
+        self._mock_methods(instance)
+        self.assertIs(instance.discover(self._supported_os), autoload_details)
+        instance._is_valid_device_os.assert_called_once_with(self._supported_os)
+        instance._build_root.assert_called_once_with()
+        instance._build_chassis.assert_called_once_with()
+        instance._build_power_modules.assert_called_once_with()
+        instance._build_modules.assert_called_once_with()
+        instance._build_sub_modules.assert_called_once_with()
+        instance._build_ports.assert_called_once_with()
+        instance._log_autoload_details.assert_called_once_with(autoload_details)
         autoload_details_builder_class.assert_called_once_with(self._resource)
         autoload_details_builder.autoload_details.assert_called_once_with()
