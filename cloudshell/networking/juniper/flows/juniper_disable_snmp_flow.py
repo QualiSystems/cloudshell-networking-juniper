@@ -29,17 +29,17 @@ class JuniperDisableSnmpFlow(DisableSnmpFlow):
     def _disable_snmp(self, cli_service, snmp_parameters):
         snmp_community = snmp_parameters.snmp_community
         if not snmp_community:
-            raise Exception(self.__class__.__name__, "SNMP Community has to be defined")
+            raise Exception("SNMP Community has to be defined")
         snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         try:
             self._logger.debug('Disable SNMP')
             snmp_actions.disable_snmp(snmp_community)
             commit_rollback.commit()
-        except CommandExecutionException as exception:
+        except CommandExecutionException:
             commit_rollback.rollback()
-            self._logger.error(exception)
-            raise exception
+            self._logger.exception('Failed to disable SNMP')
+            raise
 
     def _disable_snmp_v3(self, cli_service, snmp_parameters):
         snmp_v3_actions = EnableDisableSnmpV3Actions(cli_service, self._logger)
@@ -49,7 +49,7 @@ class JuniperDisableSnmpFlow(DisableSnmpFlow):
             self._logger.debug('Disable SNMPv3')
             snmp_v3_actions.disable_snmp_v3(snmp_user)
             commit_rollback.commit()
-        except CommandExecutionException as exception:
+        except CommandExecutionException:
             commit_rollback.rollback()
-            self._logger.error(exception)
-            raise exception
+            self._logger.exception('Failed to enable SNMPv3')
+            raise
