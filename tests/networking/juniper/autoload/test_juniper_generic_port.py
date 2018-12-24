@@ -12,18 +12,24 @@ class TestJuniperGenericPort(TestCase):
         self._shell_name = Mock()
         self._shell_type = Mock()
         self._resource_name = 'test_resource'
+        self.generic_port_class = Mock()
+        self.generic_portchannel_class = Mock()
 
+    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.networking_model')
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperGenericPort.port_name',
            new_callable=PropertyMock)
-    def _create_port_instance(self, port_name):
+    def _create_port_instance(self, port_name, networking_model):
         port_name.return_value = 'port'
+        networking_model.GenericPort = self.generic_port_class
         return JuniperGenericPort(self._index, self._snmp_handler, self._shell_name, self._shell_type,
                                   self._resource_name)
 
+    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.networking_model')
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperGenericPort.port_name',
            new_callable=PropertyMock)
-    def _create_portchannel_instance(self, port_name):
+    def _create_portchannel_instance(self, port_name, networking_model):
         port_name.return_value = 'ae1'
+        networking_model.GenericPortChannel = self.generic_portchannel_class
         return JuniperGenericPort(self._index, self._snmp_handler, self._shell_name, self._shell_type,
                                   self._resource_name)
 
@@ -191,13 +197,12 @@ class TestJuniperGenericPort(TestCase):
            new_callable=PropertyMock)
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperGenericPort.port_description',
            new_callable=PropertyMock)
-    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.GenericPort')
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.AddRemoveVlanHelper')
-    def test_get_port(self, add_remove_vlan_helper, generic_port_class, port_description_prop, port_type_prop,
+    def test_get_port(self, add_remove_vlan_helper, port_description_prop, port_type_prop,
                       port_name_prop):
         instance = self._create_port_instance()
         port_instance = Mock()
-        generic_port_class.return_value = port_instance
+        self.generic_port_class.return_value = port_instance
         name = Mock()
         add_remove_vlan_helper.convert_port_name.return_value = name
         description = Mock()
@@ -222,7 +227,7 @@ class TestJuniperGenericPort(TestCase):
         instance._get_port_autoneg = Mock(return_value=autoneg)
         port = instance.get_port()
         self.assertIs(port, port_instance)
-        generic_port_class.assert_called_once_with(shell_name=self._shell_name, name=name,
+        self.generic_port_class.assert_called_once_with(shell_name=self._shell_name, name=name,
                                                    unique_id='{0}.{1}.{2}'.format(self._resource_name, 'port',
                                                                                   self._index))
         self.assertIs(port.port_description, description)
@@ -243,14 +248,13 @@ class TestJuniperGenericPort(TestCase):
            new_callable=PropertyMock)
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.JuniperGenericPort.port_description',
            new_callable=PropertyMock)
-    @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.GenericPortChannel')
     @patch('cloudshell.networking.juniper.autoload.juniper_snmp_autoload.AddRemoveVlanHelper')
-    def test_get_portchannel(self, add_remove_vlan_helper, generic_portchannel_class, port_description_prop,
+    def test_get_portchannel(self, add_remove_vlan_helper, port_description_prop,
                              port_type_prop,
                              port_name_prop):
-        instance = self._create_port_instance()
+        instance = self._create_portchannel_instance()
         port_instance = Mock()
-        generic_portchannel_class.return_value = port_instance
+        self.generic_portchannel_class.return_value = port_instance
         name = Mock()
         add_remove_vlan_helper.convert_port_name.return_value = name
         description = Mock()
@@ -266,8 +270,9 @@ class TestJuniperGenericPort(TestCase):
         instance.associated_port_names = associated_ports
         portchannel = instance.get_portchannel()
         self.assertIs(portchannel, port_instance)
-        generic_portchannel_class.assert_called_once_with(shell_name=self._shell_name, name=name,
-                                                          unique_id='{0}.{1}.{2}'.format(self._resource_name, 'port_channel',
+        self.generic_portchannel_class.assert_called_once_with(shell_name=self._shell_name, name=name,
+                                                          unique_id='{0}.{1}.{2}'.format(self._resource_name,
+                                                                                         'port_channel',
                                                                                          self._index))
         self.assertIs(portchannel.port_description, description)
         self.assertIs(portchannel.ipv4_address, ipv4)
