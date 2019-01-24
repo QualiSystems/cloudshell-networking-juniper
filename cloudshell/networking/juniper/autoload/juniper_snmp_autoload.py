@@ -400,7 +400,7 @@ class JuniperSnmpAutoload(object):
                 self._power_port_indexes.append(power_port_id)
 
                 power_port = self.resource_model.GenericPowerPort(shell_name=self.shell_name,
-                                                                  name="PP{}".format(power_port_id),
+                                                                  name="Power Port {}".format(power_port_id),
                                                                   unique_id="{0}.{1}.{2}".format(self._resource_name,
                                                                                                  "power_port", index))
 
@@ -464,27 +464,26 @@ class JuniperSnmpAutoload(object):
                                        "jnxContentsSerialNo": "str",
                                        "jnxContentsRevision": "str"}
 
-        element_index = "8"
-        if element_index in self.content_indexes:
-            for index in self.content_indexes[element_index]:
-                content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
-                                                                sub_modules_snmp_attributes).get(index)
-                index1, index2, index3, index4 = index.split(".")[:4]
-                parent_id = index2
-                sub_module_id = index3
+        element_indexes = ["8", "20"]
+        for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
+            content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
+                                                            sub_modules_snmp_attributes).get(index)
+            index1, index2, index3, index4 = index.split(".")[:4]
+            parent_id = index2
+            sub_module_id = index3
 
-                sub_module = self.resource_model.GenericSubModule(shell_name=self.shell_name,
-                                                                  name="SubModule {}".format(sub_module_id),
-                                                                  unique_id="{0}.{1}.{2}".format(self._resource_name,
-                                                                                                 "sub_module", index))
+            sub_module = self.resource_model.GenericSubModule(shell_name=self.shell_name,
+                                                              name="SubModule {}".format(sub_module_id),
+                                                              unique_id="{0}.{1}.{2}".format(self._resource_name,
+                                                                                             "sub_module", index))
 
-                sub_module.model = self._get_element_model(content_data)
-                sub_module.serial_number = content_data.get("jnxContentsSerialNo")
-                sub_module.version = content_data.get("jnxContentsRevision")
+            sub_module.model = self._get_element_model(content_data)
+            sub_module.serial_number = content_data.get("jnxContentsSerialNo")
+            sub_module.version = content_data.get("jnxContentsRevision")
 
-                if parent_id in self._modules:
-                    self._modules[parent_id].add_sub_resource(sub_module_id, sub_module)
-                    self.sub_modules[sub_module_id] = sub_module
+            if parent_id in self._modules:
+                self._modules[parent_id].add_sub_resource(sub_module_id, sub_module)
+                self.sub_modules[sub_module_id] = sub_module
 
     @staticmethod
     def _get_element_model(content_data):
