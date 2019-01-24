@@ -400,7 +400,7 @@ class JuniperSnmpAutoload(object):
                 self._power_port_indexes.append(power_port_id)
 
                 power_port = self.resource_model.GenericPowerPort(shell_name=self.shell_name,
-                                                                  name="Power Port {}".format(power_port_id),
+                                                                  name="PP {}".format(power_port_id),
                                                                   unique_id="{0}.{1}.{2}".format(self._resource_name,
                                                                                                  "power_port", index))
 
