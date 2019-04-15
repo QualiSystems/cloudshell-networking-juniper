@@ -3,7 +3,7 @@
 
 from collections import OrderedDict
 
-from cloudshell.cli.command_mode import CommandMode
+from cloudshell.cli.service.command_mode import CommandMode
 from cloudshell.shell.core.api_utils import decrypt_password
 
 
