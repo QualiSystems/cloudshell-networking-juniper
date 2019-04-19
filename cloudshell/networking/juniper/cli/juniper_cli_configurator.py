@@ -3,13 +3,13 @@
 
 from cloudshell.cli.service.command_mode_helper import CommandModeHelper
 
-from cloudshell.cli.configurator import EnableConfigModeConfigurator
+from cloudshell.cli.configurator import AbstractModeConfigurator
 from cloudshell.networking.juniper.cli.juniper_ssh_session import JuniperSSHSession
 from cloudshell.networking.juniper.cli.juniper_telnet_session import JuniperTelnetSession
 from cloudshell.networking.juniper.cli.junipr_command_modes import DefaultCommandMode, ConfigCommandMode
 
 
-class JuniperCliConfigurator(EnableConfigModeConfigurator):
+class JuniperCliConfigurator(AbstractModeConfigurator):
     REGISTERED_SESSIONS = (JuniperSSHSession, JuniperTelnetSession)
 
     def __init__(self, cli, resource_config, logger, api):

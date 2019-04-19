@@ -3,9 +3,8 @@
 
 import os
 import re
+from functools import reduce
 
-from cloudshell.shell_standards.networking.autoload_models import NetworkingResource
-from cloudshell.shell_standards.firewall.autoload_models import FirewallResource
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper
 
 from cloudshell.networking.juniper.utils import sort_elements_by_attributes
@@ -22,20 +21,19 @@ class JuniperGenericPort(object):
     IF_MIB = 'IF-MIB'
     ETHERLIKE_MIB = 'EtherLike-MIB'
 
-    def __init__(self, index, snmp_handler, shell_name, resource_model, resource_name):
+    def __init__(self, index, snmp_handler, resource_model):
         """
         Create GenericPort with index and snmp handler
         :param index:
         :param snmp_handler:
+        :param cloudshell.shell_standards.networking.autoload_model.NetworkingResourceModel|cloudshell.shell_standards.firewall.autoload_model.FirewallResourceModel resource_model:
         :return:
         """
-        self.shell_name = shell_name
-        self.associated_port_names = []
         self.index = index
         self._snmp_handler = snmp_handler
-        self._resource_name = resource_name
-        self.resource_model = resource_model
+        self._resource_model = resource_model
 
+        self.associated_port_names = []
         self._port_phis_id = None
         self._port_name = None
         self._logical_unit = None
@@ -129,10 +127,8 @@ class JuniperGenericPort(object):
         Build Port instance using collected information
         :return:
         """
-        port = self.resource_model.Entities.Port(shell_name=self.shell_name,
-                                                          name=AddRemoveVlanHelper.convert_port_name(self.port_name),
-                                                          unique_id='{0}.{1}.{2}'.format(self._resource_name, 'port',
-                                                                                         self.index))
+        port = self._resource_model.entities.Port(self.index,
+                                                  name=AddRemoveVlanHelper.convert_port_name(self.port_name))
 
         port.port_description = self.port_description
         port.l2_protocol_type = self.type
@@ -152,13 +148,9 @@ class JuniperGenericPort(object):
         Build PortChannel instance using collected information
         :return:
         """
-        port_name = AddRemoveVlanHelper.convert_port_name(self.port_name)
-        port_channel = self.resource_model.Entities.PortChannel(shell_name=self.shell_name,
-                                                                         name=port_name,
-                                                                         unique_id='{0}.{1}.{2}'.format(
-                                                                             self._resource_name,
-                                                                             'port_channel',
-                                                                             self.index))
+        port_channel = self._resource_model.entities.PortChannel(self.port_phis_id,
+                                                                 name=AddRemoveVlanHelper.convert_port_name(
+                                                                     self.port_name))
 
         port_channel.port_description = self.port_description
         port_channel.ipv4_address = self._get_associated_ipv4_address()
@@ -177,26 +169,20 @@ class JuniperSnmpAutoload(object):
 
     SNMP_ERRORS = [r'No\s+Such\s+Object\s+currently\s+exists']
 
-    def __init__(self, snmp_handler, shell_name, family_name, resource_name, logger):
+    def __init__(self, snmp_handler, resource_model, logger):
         """
         :param snmp_handler:
-        :param shell_name:
-        :param shell_type:
-        :param resource_name:
-        :param logger:
-        :type logger: logging.Logger
+        :param cloudshell.shell_standards.networking.autoload_model.NetworkingResourceModel|cloudshell.shell_standards.firewall.autoload_model.FirewallResourceModel resource_model:
+        :param logging.Logger logger:
         """
-        self.shell_name = shell_name
-        self.family_name = family_name
+        self._resource_model = resource_model
+        self._snmp_handler = snmp_handler
+        self._logger = logger
+
         self._content_indexes = None
         self._if_indexes = None
-        self._logger = logger
-        self._snmp_handler = snmp_handler
-        self._resource_name = resource_name
         self._initialize_snmp_handler()
-        self.resource_model = FirewallResource if self.family_name in FirewallResource.SUPPORTED_FAMILY_NAMES else NetworkingResource
 
-        self.resource = self.resource_model(resource_name, shell_name, family_name)
         self._chassis = {}
         self._modules = {}
         self.sub_modules = {}
@@ -310,12 +296,12 @@ class JuniperSnmpAutoload(object):
         if os_version_search:
             os_version = os_version_search.group(0).replace('JUNOS ', '').replace(',', '').strip(' \t\n\r')
 
-        self.resource.contact_name = self.snmp_handler.get_property('SNMPv2-MIB', 'sysContact', '0')
-        self.resource.system_name = self.snmp_handler.get_property('SNMPv2-MIB', 'sysName', '0')
-        self.resource.location = self.snmp_handler.get_property('SNMPv2-MIB', 'sysLocation', '0')
-        self.resource.os_version = os_version
-        self.resource.vendor = vendor
-        self.resource.model = model
+        self._resource_model.contact_name = self.snmp_handler.get_property('SNMPv2-MIB', 'sysContact', '0')
+        self._resource_model.system_name = self.snmp_handler.get_property('SNMPv2-MIB', 'sysName', '0')
+        self._resource_model.location = self.snmp_handler.get_property('SNMPv2-MIB', 'sysLocation', '0')
+        self._resource_model.os_version = os_version
+        self._resource_model.vendor = vendor
+        self._resource_model.model = model
 
     def _get_content_indexes(self):
         container_indexes = self.snmp_handler.walk(('JUNIPER-MIB', 'jnxContentsContainerIndex'))
@@ -349,6 +335,7 @@ class JuniperSnmpAutoload(object):
         element_index = '1'
         chassis_snmp_attributes = {'jnxContentsModel': 'str', 'jnxContentsType': 'str', 'jnxContentsSerialNo': 'str',
                                    'jnxContentsChassisId': 'str'}
+        chassis_table = {}
         if element_index in self.content_indexes:
             for index in self.content_indexes[element_index]:
                 content_data = self.snmp_handler.get_properties('JUNIPER-MIB', index, chassis_snmp_attributes).get(
@@ -361,22 +348,21 @@ class JuniperSnmpAutoload(object):
 
                 self._chassis_indexes.append(chassis_id)
 
-                chassis = self.resource_model.Entities.Chassis(shell_name=self.shell_name,
-                                                             name="Chassis {}".format(chassis_id),
-                                                             unique_id="{0}.{1}.{2}".format(self._resource_name,
-                                                                                            "chassis", index))
+                chassis = self._resource_model.entities.Chassis(index)
                 chassis.model = self._get_element_model(content_data)
                 chassis.serial_number = content_data.get("jnxContentsSerialNo")
 
-                self.resource.connect_chassis(chassis)
+                self._resource_model.connect_chassis(chassis)
 
                 chassis_id_str = content_data.get("jnxContentsChassisId")
                 if chassis_id_str:
-                    self._chassis[chassis_id_str.strip("'")] = chassis
+                    chassis_table[chassis_id_str.strip("'")] = chassis
+        return chassis_table
 
-    def _build_power_modules(self):
+    def _build_power_modules(self, chassis_table):
         """
         Build Power modules resources and attributes
+        :param dict chassis_table:
         :return:
         """
         self.logger.debug("Building PowerPorts")
@@ -395,10 +381,7 @@ class JuniperSnmpAutoload(object):
                     continue
                 self._power_port_indexes.append(power_port_id)
 
-                power_port = self.resource_model.Entities.PowerPort(shell_name=self.shell_name,
-                                                                  name="PP {}".format(power_port_id),
-                                                                  unique_id="{0}.{1}.{2}".format(self._resource_name,
-                                                                                                 "power_port", index))
+                power_port = self._resource_model.entities.PowerPort(index)
 
                 power_port.model = self._get_element_model(content_data)
                 power_port.port_description = content_data.get("jnxContentsDescr")
@@ -407,7 +390,7 @@ class JuniperSnmpAutoload(object):
 
                 chassis_id_str = content_data.get("jnxContentsChassisId")
                 if chassis_id_str:
-                    chassis = self._chassis.get(chassis_id_str.strip("'"))
+                    chassis = chassis_table.get(chassis_id_str.strip("'"))
                     if chassis:
                         chassis.add_sub_resource(power_port_id, power_port)
 
@@ -433,10 +416,7 @@ class JuniperSnmpAutoload(object):
                 if module_id in self._modules:
                     continue
 
-                module = self.resource_model.Entities.Module(shell_name=self.shell_name,
-                                                           name="Module {}".format(module_id),
-                                                           unique_id="{0}.{1}.{2}".format(self._resource_name, "module",
-                                                                                          index))
+                module = self._resource_model.entities.Module(index)
 
                 module.model = self._get_element_model(content_data)
                 module.serial_number = content_data.get("jnxContentsSerialNo")
@@ -468,10 +448,7 @@ class JuniperSnmpAutoload(object):
             parent_id = index2
             sub_module_id = index3
 
-            sub_module = self.resource_model.Entities.SubModule(shell_name=self.shell_name,
-                                                              name="SubModule {}".format(sub_module_id),
-                                                              unique_id="{0}.{1}.{2}".format(self._resource_name,
-                                                                                             "sub_module", index))
+            sub_module = self._resource_model.entities.SubModule(index)
 
             sub_module.model = self._get_element_model(content_data)
             sub_module.serial_number = content_data.get("jnxContentsSerialNo")
@@ -499,9 +476,7 @@ class JuniperSnmpAutoload(object):
             index = int(index)
             generic_port = JuniperGenericPort(index=index,
                                               snmp_handler=self.snmp_handler,
-                                              shell_name=self.shell_name,
-                                              resource_model=self.resource_model,
-                                              resource_name=self._resource_name)
+                                              resource_model=self._resource_model)
             if not self._port_filtered_by_name(generic_port) and not self._port_filtered_by_type(generic_port):
                 if generic_port.logical_unit == '0':
                     self._physical_generic_ports[index] = generic_port
@@ -617,7 +592,7 @@ class JuniperSnmpAutoload(object):
         self._associate_adjacent()
         for generic_port in self._physical_generic_ports.values():
             if generic_port.is_portchannel:
-                self.resource.add_sub_resource(generic_port.port_phis_id, generic_port.get_portchannel())
+                self._resource_model.connect_port_channel(generic_port.get_portchannel())
             else:
                 port = generic_port.get_port()
                 if generic_port.fpc_id > 0 and generic_port.fpc_id in self._modules:
@@ -632,7 +607,7 @@ class JuniperSnmpAutoload(object):
                         fpc.add_sub_resource(generic_port.port_phis_id, port)
                 else:
                     chassis = self._chassis.values()[0]
-                    chassis.add_sub_resource(generic_port.port_phis_id, port)
+                    chassis.connect_port(generic_port.port_phis_id, port)
 
     def _get_pic_by_index(self, fpc, index):
         for element_id, pic_list in fpc.resources.get("SM", {}).iteritems():
@@ -687,11 +662,11 @@ class JuniperSnmpAutoload(object):
             raise Exception(self.__class__.__name__, 'Unsupported device OS')
 
         self._build_root()
-        self._build_chassis()
-        self._build_power_modules()
-        self._build_modules()
-        self._build_sub_modules()
-        self._build_ports()
-        autoload_details = AutoloadDetailsBuilder(self.resource).autoload_details()
+        chassis_table = self._build_chassis()
+        power_port_table = self._build_power_modules(chassis_table)
+        module_table = self._build_modules(chassis_table)
+        sub_module_table = self._build_sub_modules(module_table)
+        port_table = self._build_ports(chassis_table, module_table, sub_module_table)
+        autoload_details = self._resource_model.build()
         self._log_autoload_details(autoload_details)
         return autoload_details
