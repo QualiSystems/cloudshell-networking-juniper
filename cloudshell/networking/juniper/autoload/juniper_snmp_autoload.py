@@ -97,7 +97,7 @@ class JuniperGenericPort(object):
     @property
     def port_name(self):
         if not self._port_name:
-            self._port_name = self._get_snmp_attribute(self.IF_MIB, 'ifDescr')
+            self._port_name = self._get_snmp_attribute(self.IF_MIB, 'ifDescr') or self._get_snmp_attribute(self.IF_MIB, 'ifName')
         return self._port_name
 
     def _get_associated_ipv4_address(self):
