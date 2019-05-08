@@ -1,13 +1,12 @@
-from cloudshell.cli.configurator import AbstractModeConfigurator
 from cloudshell.cli.session.session_exceptions import CommandExecutionException
 from cloudshell.networking.juniper.command_actions.add_remove_vlan_actions import AddRemoveVlanActions
 from cloudshell.networking.juniper.command_actions.commit_rollback_actions import CommitRollbackActions
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper, VlanRangeOperations, \
     VlanRange
-from cloudshell.shell_flows.connectivity.basic_flow import AbstractConnectivity
+from cloudshell.shell_flows.connectivity.basic_flow import AbstractConnectivityFlow
 
 
-class JuniperConnectivity(AbstractConnectivity):
+class JuniperConnectivity(AbstractConnectivityFlow):
     def __init__(self, cli_configurator, logger):
         """
         :param cloudshell.cli.configurator.AbstractModeConfigurator cli_configurator:
