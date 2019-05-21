@@ -97,7 +97,7 @@ class JuniperGenericPort(object):
     @property
     def port_name(self):
         if not self._port_name:
-            self._port_name = self._get_snmp_attribute(self.IF_MIB, 'ifDescr')
+            self._port_name = self._get_snmp_attribute(self.IF_MIB, 'ifDescr') or self._get_snmp_attribute(self.IF_MIB, 'ifName')
         return self._port_name
 
     def _get_associated_ipv4_address(self):
@@ -453,6 +453,19 @@ class JuniperSnmpAutoload(object):
                         chassis.add_sub_resource(module_id, module)
                         self._modules[module_id] = module
 
+    def _get_submodule_ids(self, element_indexes):
+        """ Get all sub modules ids based on sub_modules types/prefixes indexes
+            Sequences of types is important (from less important to more important)
+        """
+
+        res = {}
+        for prefix in element_indexes:
+            value = self.content_indexes.get(prefix, [])
+
+            res.update({i.split(".", 1)[-1]: i for i in value})
+
+        return res.values()
+
     def _build_sub_modules(self):
         """
         Build SubModules resources and attributes
@@ -465,7 +478,8 @@ class JuniperSnmpAutoload(object):
                                        "jnxContentsRevision": "str"}
 
         element_indexes = ["8", "20"]
-        for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
+        # for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
+        for index in self._get_submodule_ids(element_indexes=element_indexes):
             content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
                                                             sub_modules_snmp_attributes).get(index)
             index1, index2, index3, index4 = index.split(".")[:4]
