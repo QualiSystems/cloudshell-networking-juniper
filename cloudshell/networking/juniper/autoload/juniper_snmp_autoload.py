@@ -477,7 +477,7 @@ class JuniperSnmpAutoload(object):
                                        "jnxContentsSerialNo": "str",
                                        "jnxContentsRevision": "str"}
 
-        element_indexes = ["8", "20"]
+        element_indexes = ["20", "8"]
         # for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
         for index in self._get_submodule_ids(element_indexes=element_indexes):
             content_data = self.snmp_handler.get_properties("JUNIPER-MIB", index,
