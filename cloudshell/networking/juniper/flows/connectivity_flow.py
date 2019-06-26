@@ -3,7 +3,7 @@ from cloudshell.networking.juniper.command_actions.add_remove_vlan_actions impor
 from cloudshell.networking.juniper.command_actions.commit_rollback_actions import CommitRollbackActions
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper, VlanRangeOperations, \
     VlanRange
-from cloudshell.shell_flows.connectivity.basic_flow import AbstractConnectivityFlow
+from cloudshell.shell.flows.connectivity.basic_flow import AbstractConnectivityFlow
 
 
 class JuniperConnectivity(AbstractConnectivityFlow):

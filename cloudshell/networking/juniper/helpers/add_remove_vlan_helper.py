@@ -6,7 +6,7 @@ class AddRemoveVlanHelper(object):
 
     @staticmethod
     def convert_port_name(port_name):
-        for char, replacement in AddRemoveVlanHelper.PORT_NAME_CHAR_REPLACEMENT.iteritems():
+        for char, replacement in AddRemoveVlanHelper.PORT_NAME_CHAR_REPLACEMENT.items():
             port_name = port_name.replace(char, replacement)
         return port_name
 
@@ -15,7 +15,7 @@ class AddRemoveVlanHelper(object):
         port_name_splitted = port_name.split('/')[-1].split('-', 1)
         if len(port_name_splitted) == 2:
             port_suffix, port_location = port_name_splitted
-            for replacement, value in AddRemoveVlanHelper.PORT_NAME_CHAR_REPLACEMENT.iteritems():
+            for replacement, value in AddRemoveVlanHelper.PORT_NAME_CHAR_REPLACEMENT.items():
                 port_location = port_location.replace(value, replacement)
             port_name = "{0}-{1}".format(port_suffix, port_location)
         elif len(port_name_splitted) == 1:

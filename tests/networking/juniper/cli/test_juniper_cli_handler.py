@@ -3,7 +3,7 @@ from unittest import TestCase
 from mock import Mock, patch
 
 from cloudshell.networking.juniper.cli.juniper_cli_configurator import JuniperCliHandler
-from cloudshell.networking.juniper.cli.junipr_command_modes import DefaultCommandMode, ConfigCommandMode
+from cloudshell.networking.juniper.cli.juniper_command_modes import DefaultCommandMode, ConfigCommandMode
 
 
 class TestJuniperCliHandler(TestCase):

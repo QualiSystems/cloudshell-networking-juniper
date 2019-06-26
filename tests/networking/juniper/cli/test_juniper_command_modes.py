@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from mock import Mock, patch, call
 
-from cloudshell.networking.juniper.cli.junipr_command_modes import DefaultCommandMode, \
+from cloudshell.networking.juniper.cli.juniper_command_modes import DefaultCommandMode, \
     ConfigCommandMode
 from cloudshell.cli.command_mode import CommandMode
 
