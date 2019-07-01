@@ -4,6 +4,6 @@ from cloudshell.shell.flows.state.basic_flow import StateFlow
 
 class JuniperStateFlow(StateFlow):
     def shutdown(self):
-        with self.cli_configurator.enable_mode_service() as cli_service:
+        with self._cli_configurator.enable_mode_service() as cli_service:
             system_actions = SystemActions(cli_service, self._logger)
             return system_actions.shutdown()

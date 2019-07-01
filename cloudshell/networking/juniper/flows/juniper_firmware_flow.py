@@ -4,6 +4,10 @@ from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 
 
 class JuniperFirmwareFlow(AbstractFirmwareFlow):
+    def __init__(self, logger, cli_configurator):
+        super().__init__(logger)
+        self.cli_configurator = cli_configurator
+
     def _load_firmware_flow(self, path, vrf_management_name, timeout):
         """Update firmware version on device by loading provided image, performs following steps:
             1. Copy bin file from remote tftp server.
