@@ -1,4 +1,4 @@
-from cloudshell.snmp.quali_snmp import QualiMibTable
+from cloudshell.snmp.core.domain.quali_mib_table import QualiMibTable
 
 
 def sort_elements_by_attributes(elements, *attributes):
