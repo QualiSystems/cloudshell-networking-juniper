@@ -22,7 +22,7 @@ class JuniperConfigurationFlow(AbstractConfigurationOperationsFlow):
         SaveRestoreHelper.validate_configuration_type(configuration_type)
 
         self._logger.info("Save configuration to file {0}".format(folder_path))
-        with self.cli_configuration.config_mode_service() as cli_service:
+        with self.cli_configurator.config_mode_service() as cli_service:
             save_action = SaveRestoreActions(cli_service, self._logger)
             save_action.save_running(folder_path)
         return folder_path
@@ -53,7 +53,7 @@ class JuniperConfigurationFlow(AbstractConfigurationOperationsFlow):
         if not path:
             raise Exception(self.__class__.__name__, 'Config source cannot be empty')
 
-        with self.cli_configuration.self.config_mode_service() as cli_service:
+        with self.cli_configurator.self.config_mode_service() as cli_service:
             restore_actions = SaveRestoreActions(cli_service, self._logger)
             commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
             try:

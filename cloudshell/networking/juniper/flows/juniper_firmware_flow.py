@@ -1,10 +1,10 @@
 import time
-from cloudshell.devices.flows.cli_action_flows import LoadFirmwareFlow
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
+from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 
 
-class JuniperFirmwareFlow(LoadFirmwareFlow):
-    def execute_flow(self, path, vrf, timeout):
+class JuniperFirmwareFlow(AbstractFirmwareFlow):
+    def _load_firmware_flow(self, path, vrf_management_name, timeout):
         """Update firmware version on device by loading provided image, performs following steps:
             1. Copy bin file from remote tftp server.
             2. Clear in run config boot system section.
@@ -12,14 +12,14 @@ class JuniperFirmwareFlow(LoadFirmwareFlow):
             4. Check if firmware was successfully installed.
 
         :param path: full path to firmware file on ftp/tftp location
-        :param vrf: VRF Name
+        :param vrf_management_name: VRF Name
         :return: status / exception
         """
         self._logger.info("Upgrading firmware")
 
         if not path:
             raise Exception(self.__class__.__name__, "Firmware file path cannot be empty")
-        with self._cli_handler.get_cli_service(self._cli_handler.enable_mode) as cli_service:
+        with self.cli_configurator.enable_mode_service() as cli_service:
             system_actions = SystemActions(cli_service, self._logger)
             system_actions.load_firmware(path, timeout=timeout)
             waiting_time = 0
