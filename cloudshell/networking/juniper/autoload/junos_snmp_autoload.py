@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from cloudshell.networking.juniper.autoload.entities import JuniperGenericPort
-from cloudshell.shell.flows.autoload.basic_flow import AbstractAutoloadFlow
+from cloudshell.networking.juniper.autoload.mib_names import MIBS
 
 import os
 import re
 from functools import reduce
 from cloudshell.networking.juniper.autoload.utils import sort_elements_by_attributes
+from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
 
 class JunosSnmpAutoload(object):
@@ -99,8 +100,8 @@ class JunosSnmpAutoload(object):
 
     @property
     def device_info(self):
-        system_description = self._snmp_service.get_property('SNMPv2-MIB', 'sysDescr', '0')
-        system_description += self._snmp_service.get_property('JUNIPER-MIB', 'jnxBoxDescr', '0')
+        system_description = self._snmp_service.get_property(SnmpMibObject('SNMPv2-MIB', 'sysDescr', '0'))
+        system_description += self._snmp_service.get_property(SnmpMibObject('JUNIPER-MIB', 'jnxBoxDescr', '0'))
         return system_description
 
     def _initialize_snmp_handler(self):
@@ -108,19 +109,12 @@ class JunosSnmpAutoload(object):
         Snmp settings and load specific mibs
         :return:
         """
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'mibs'))
-        self._snmp_service.update_mib_sources(path)
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'mibs'))
+        self._snmp_service.add_mib_folder_path(path)
         self._logger.info("Loading mibs")
-        self._snmp_service.load_mib('JUNIPER-MIB')
-        self._snmp_service.load_mib('JUNIPER-IF-MIB')
-        self._snmp_service.load_mib('IF-MIB')
-        self._snmp_service.load_mib('JUNIPER-CHASSIS-DEFINES-MIB')
-        self._snmp_service.load_mib('IEEE8023-LAG-MIB')
-        self._snmp_service.load_mib('EtherLike-MIB')
-        self._snmp_service.load_mib('IP-MIB')
-        self._snmp_service.load_mib('IPV6-MIB')
-        self._snmp_service.load_mib('LLDP-MIB')
-        self._snmp_service.set_snmp_errors(self.SNMP_ERRORS)
+        self._snmp_service.load_mib_tables(
+            [MIBS.JUNIPER_MIB, MIBS.JUNIPER_IF_MIB, MIBS.IF_MIB, MIBS.LAG_MIB, MIBS.IP_MIB, MIBS.IPV6_MIB,
+             MIBS.LLDP_MIB])
 
     def build_root(self, resource_model):
         """
@@ -131,7 +125,7 @@ class JunosSnmpAutoload(object):
         vendor = ''
         model = ''
         os_version = ''
-        sys_obj_id = self._snmp_service.get_property('SNMPv2-MIB', 'sysObjectID', 0)
+        sys_obj_id = self._snmp_service.get_property(SnmpMibObject(MIBS.SNMPV2_MIB, 'sysObjectID', '0'))
         model_search = re.search(r'^(?P<vendor>\w+)-\S+jnxProduct(?:Name)?(?P<model>\S+)', sys_obj_id)
         if model_search:
             vendor = model_search.groupdict()['vendor'].capitalize()
@@ -140,9 +134,9 @@ class JunosSnmpAutoload(object):
         if os_version_search:
             os_version = os_version_search.group(0).replace('JUNOS ', '').replace(',', '').strip(' \t\n\r')
 
-        resource_model.contact_name = self._snmp_service.get_property('SNMPv2-MIB', 'sysContact', '0')
-        resource_model.system_name = self._snmp_service.get_property('SNMPv2-MIB', 'sysName', '0')
-        resource_model.location = self._snmp_service.get_property('SNMPv2-MIB', 'sysLocation', '0')
+        resource_model.contact_name = self._snmp_service.get_property(SnmpMibObject('SNMPv2-MIB', 'sysContact', '0'))
+        resource_model.system_name = self._snmp_service.get_property(SnmpMibObject('SNMPv2-MIB', 'sysName', '0'))
+        resource_model.location = self._snmp_service.get_property(SnmpMibObject('SNMPv2-MIB', 'sysLocation', '0'))
         resource_model.os_version = os_version
         resource_model.vendor = vendor
         resource_model.model = model
@@ -332,9 +326,7 @@ class JunosSnmpAutoload(object):
 
         for index in self.if_indexes:
             index = int(index)
-            generic_port = JuniperGenericPort(index=index,
-                                              snmp_handler=self._snmp_service,
-                                              resource_model=resource_model)
+            generic_port = JuniperGenericPort(index, self._snmp_service, resource_model)
             if not self._port_filtered_by_name(generic_port) and not self._port_filtered_by_type(generic_port):
                 if generic_port.logical_unit == '0':
                     self._physical_generic_ports[index] = generic_port

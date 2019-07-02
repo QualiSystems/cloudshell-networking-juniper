@@ -16,7 +16,7 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
         super().__init__(logger)
         self._snmp_configurator = snmp_configurator
 
-    def _log_autoload_details(self, autoload_details):
+    def _log_device_details(self, autoload_details):
         """
         Logging autoload details
         :param autoload_details:
@@ -71,5 +71,5 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
         sub_module_table = snmp_autoload.build_sub_modules(resource_model, module_table)
         port_table = snmp_autoload.build_ports(resource_model, chassis_table, module_table, sub_module_table)
         autoload_details = resource_model.build()
-        self._log_autoload_details(autoload_details)
+        # self._log_autoload_details(autoload_details)
         return autoload_details

@@ -4,7 +4,9 @@
 from collections import OrderedDict
 
 from cloudshell.cli.service.command_mode import CommandMode
-from cloudshell.shell.standards.core import decrypt_password
+
+
+# from cloudshell.shell.standards.core import decrypt_password
 
 
 # class CliCommandMode(CommandMode):
@@ -83,7 +85,7 @@ class ConfigCommandMode(CommandMode):
 
     def enter_action_map(self):
         return OrderedDict([(r'[Pp]assword', lambda session, logger: session.send_line(
-            decrypt_password(self._api, self.resource_config.enable_password or self.resource_config.password)))])
+            self.resource_config.enable_password or self.resource_config.password, logger))])
 
     def enter_error_map(self):
         return OrderedDict([(r'[Ee]rror:', 'Command error')])
