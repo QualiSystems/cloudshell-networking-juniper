@@ -4,7 +4,6 @@
 from collections import OrderedDict
 
 from cloudshell.cli.service.command_mode import CommandMode
-from cloudshell.shell.standards.core import decrypt_password
 
 
 # class CliCommandMode(CommandMode):
@@ -41,9 +40,8 @@ class DefaultCommandMode(CommandMode):
     ENTER_COMMAND = ''
     EXIT_COMMAND = 'exit'
 
-    def __init__(self, resource_config, api):
+    def __init__(self, resource_config):
         self.resource_config = resource_config
-        self._api = api
         CommandMode.__init__(self, DefaultCommandMode.PROMPT,
                              DefaultCommandMode.ENTER_COMMAND,
                              DefaultCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
@@ -72,9 +70,8 @@ class ConfigCommandMode(CommandMode):
     ENTER_COMMAND = 'configure'
     EXIT_COMMAND = 'exit'
 
-    def __init__(self, resource_config, api):
+    def __init__(self, resource_config):
         self.resource_config = resource_config
-        self._api = api
         CommandMode.__init__(self, ConfigCommandMode.PROMPT,
                              ConfigCommandMode.ENTER_COMMAND,
                              ConfigCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
@@ -83,7 +80,7 @@ class ConfigCommandMode(CommandMode):
 
     def enter_action_map(self):
         return OrderedDict([(r'[Pp]assword', lambda session, logger: session.send_line(
-            decrypt_password(self._api, self.resource_config.enable_password or self.resource_config.password)))])
+            self.resource_config.enable_password or self.resource_config.password))])
 
     def enter_error_map(self):
         return OrderedDict([(r'[Ee]rror:', 'Command error')])
