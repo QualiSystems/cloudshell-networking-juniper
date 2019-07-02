@@ -43,9 +43,8 @@ class DefaultCommandMode(CommandMode):
     ENTER_COMMAND = ''
     EXIT_COMMAND = 'exit'
 
-    def __init__(self, resource_config, api):
+    def __init__(self, resource_config):
         self.resource_config = resource_config
-        self._api = api
         CommandMode.__init__(self, DefaultCommandMode.PROMPT,
                              DefaultCommandMode.ENTER_COMMAND,
                              DefaultCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
@@ -74,9 +73,8 @@ class ConfigCommandMode(CommandMode):
     ENTER_COMMAND = 'configure'
     EXIT_COMMAND = 'exit'
 
-    def __init__(self, resource_config, api):
+    def __init__(self, resource_config):
         self.resource_config = resource_config
-        self._api = api
         CommandMode.__init__(self, ConfigCommandMode.PROMPT,
                              ConfigCommandMode.ENTER_COMMAND,
                              ConfigCommandMode.EXIT_COMMAND, enter_action_map=self.enter_action_map(),
