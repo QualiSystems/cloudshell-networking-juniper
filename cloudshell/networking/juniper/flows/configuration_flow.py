@@ -1,14 +1,14 @@
 from cloudshell.cli.session.session_exceptions import CommandExecutionException
 from cloudshell.networking.juniper.command_actions.save_restore_actions import SaveRestoreActions
 from cloudshell.networking.juniper.helpers.save_restore_helper import SaveRestoreHelper
-from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationOperationsFlow
+from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationFlow
 from cloudshell.networking.juniper.command_actions.commit_rollback_actions import \
     CommitRollbackActions
 
 
-class JuniperConfigurationFlow(AbstractConfigurationOperationsFlow):
-    def __init__(self, resource_config, logger, api, cli_configurator):
-        super().__init__(resource_config, logger, api)
+class JuniperConfigurationFlow(AbstractConfigurationFlow):
+    def __init__(self, resource_config, logger, cli_configurator):
+        super().__init__(resource_config, logger)
         self.cli_configurator = cli_configurator
 
     @property
