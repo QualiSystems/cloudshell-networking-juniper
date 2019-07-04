@@ -1,4 +1,3 @@
-from cloudshell.cli.cli_service_impl import CliServiceImpl as CliService
 from cloudshell.cli.command_template.command_template_executor import CommandTemplateExecutor
 from cloudshell.networking.juniper.command_templates import enable_disable_snmp_v3 as command_template
 from cloudshell.snmp.snmp_parameters import SNMPV3Parameters

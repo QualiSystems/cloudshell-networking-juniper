@@ -1,6 +1,9 @@
 import re
+from functools import lru_cache
 
+from cloudshell.networking.juniper.autoload.mib_names import MIBS
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper
+from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
 
 class JuniperGenericPort(object):
@@ -9,10 +12,6 @@ class JuniperGenericPort(object):
     """
     PORTCHANNEL_NAME_PATTERN = re.compile(r'ae\d+', re.IGNORECASE)
     AUTOLOAD_MAX_STRING_LENGTH = 100
-
-    JUNIPER_IF_MIB = 'JUNIPER-IF-MIB'
-    IF_MIB = 'IF-MIB'
-    ETHERLIKE_MIB = 'EtherLike-MIB'
 
     def __init__(self, index, snmp_service, resource_model):
         """
@@ -27,13 +26,6 @@ class JuniperGenericPort(object):
         self._resource_model = resource_model
 
         self.associated_port_names = []
-        self._port_phis_id = None
-        self._port_name = None
-        self._logical_unit = None
-        self._fpc_id = None
-        self._pic_id = None
-        self._type = None
-
         self.ipv4_addresses = []
         self.ipv6_addresses = []
         self.port_adjacent = None
@@ -41,47 +33,41 @@ class JuniperGenericPort(object):
         self._max_string_length = self.AUTOLOAD_MAX_STRING_LENGTH
 
     def _get_snmp_attribute(self, mib, snmp_attribute):
-        return self._snmp_service.get_property(mib, snmp_attribute, self.index)
+        return self._snmp_service.get_property(SnmpMibObject(mib, snmp_attribute, self.index)).safe_value
 
     @property
+    @lru_cache()
     def port_phis_id(self):
-        if not self._port_phis_id:
-            self._port_phis_id = self._get_snmp_attribute(self.JUNIPER_IF_MIB, 'ifChassisPort')
-        return self._port_phis_id
+        return self._get_snmp_attribute(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')
 
     @property
     def port_description(self):
         return self._get_snmp_attribute('IF-MIB', 'ifAlias')
 
     @property
+    @lru_cache()
     def logical_unit(self):
-        if not self._logical_unit:
-            self._logical_unit = self._get_snmp_attribute(self.JUNIPER_IF_MIB, 'ifChassisLogicalUnit')
-        return self._logical_unit
+        return self._get_snmp_attribute(MIBS.JUNIPER_IF_MIB, 'ifChassisLogicalUnit')
 
     @property
+    @lru_cache()
     def fpc_id(self):
-        if not self._fpc_id:
-            self._fpc_id = self._get_snmp_attribute(self.JUNIPER_IF_MIB, 'ifChassisFpc')
-        return self._fpc_id
+        return self._get_snmp_attribute(MIBS.JUNIPER_IF_MIB, 'ifChassisFpc')
 
     @property
+    @lru_cache()
     def pic_id(self):
-        if not self._pic_id:
-            self._pic_id = self._get_snmp_attribute(self.JUNIPER_IF_MIB, 'ifChassisPic')
-        return self._pic_id
+        return self._get_snmp_attribute(MIBS.JUNIPER_IF_MIB, 'ifChassisPic')
 
     @property
+    @lru_cache()
     def type(self):
-        if not self._type:
-            self._type = self._get_snmp_attribute(self.IF_MIB, 'ifType').strip('\'')
-        return self._type
+        return self._get_snmp_attribute(MIBS.IF_MIB, 'ifType').strip('\'')
 
     @property
+    @lru_cache()
     def port_name(self):
-        if not self._port_name:
-            self._port_name = self._get_snmp_attribute(self.IF_MIB, 'ifDescr')
-        return self._port_name
+        return self._get_snmp_attribute(MIBS.IF_MIB, 'ifDescr') or self._get_snmp_attribute(MIBS.IF_MIB, 'ifName')
 
     @property
     def is_portchannel(self):
@@ -100,7 +86,7 @@ class JuniperGenericPort(object):
 
     def _get_port_duplex(self):
         duplex = None
-        snmp_result = self._get_snmp_attribute(self.ETHERLIKE_MIB, 'dot3StatsDuplexStatus')
+        snmp_result = self._get_snmp_attribute(MIBS.ETHERLIKE_MIB, 'dot3StatsDuplexStatus')
         if snmp_result:
             port_duplex = snmp_result.strip('\'')
             if re.search(r'[Ff]ull', port_duplex):
@@ -119,14 +105,14 @@ class JuniperGenericPort(object):
         Build Port instance using collected information
         :return:
         """
-        port = self._resource_model.entities.Port(self.index,
+        port = self._resource_model.entities.Port(self.port_phis_id,
                                                   name=AddRemoveVlanHelper.convert_port_name(self.port_name))
 
         port.port_description = self.port_description
         port.l2_protocol_type = self.type
-        port.mac_address = self._get_snmp_attribute(self.IF_MIB, 'ifPhysAddress')
-        port.mtu = self._get_snmp_attribute(self.IF_MIB, 'ifMtu')
-        port.bandwidth = self._get_snmp_attribute(self.IF_MIB, 'ifHighSpeed')
+        port.mac_address = self._get_snmp_attribute(MIBS.IF_MIB, 'ifPhysAddress')
+        port.mtu = self._get_snmp_attribute(MIBS.IF_MIB, 'ifMtu')
+        port.bandwidth = self._get_snmp_attribute(MIBS.IF_MIB, 'ifHighSpeed')
         port.ipv4_address = self._get_associated_ipv4_address()
         port.ipv6_address = self._get_associated_ipv6_address()
         port.duplex = self._get_port_duplex()

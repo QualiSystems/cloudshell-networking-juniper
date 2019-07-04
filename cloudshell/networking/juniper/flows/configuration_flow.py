@@ -2,7 +2,7 @@ from cloudshell.cli.session.session_exceptions import CommandExecutionException
 from cloudshell.networking.juniper.command_actions.save_restore_actions import SaveRestoreActions
 from cloudshell.networking.juniper.helpers.save_restore_helper import SaveRestoreHelper
 from cloudshell.shell.flows.configuration.basic_flow import AbstractConfigurationOperationsFlow
-from networking.juniper.command_actions.commit_rollback_actions import \
+from cloudshell.networking.juniper.command_actions.commit_rollback_actions import \
     CommitRollbackActions
 
 

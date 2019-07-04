@@ -25,12 +25,12 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
         self._logger.debug('-------------------- <RESOURCES> ----------------------')
         for resource in autoload_details.resources:
             self._logger.debug(
-                '{0:15}, {1:20}, {2}'.format(resource.relative_address, resource.name, resource.unique_identifier))
+                '{0:15}, {1:20}, {2}'.format(str(resource.relative_address), resource.name, resource.unique_identifier))
         self._logger.debug('-------------------- </RESOURCES> ----------------------')
 
         self._logger.debug('-------------------- <ATTRIBUTES> ---------------------')
         for attribute in autoload_details.attributes:
-            self._logger.debug('-- {0:15}, {1:60}, {2}'.format(attribute.relative_address, attribute.attribute_name,
+            self._logger.debug('-- {0:15}, {1:60}, {2}'.format(str(attribute.relative_address), attribute.attribute_name,
                                                                attribute.attribute_value))
         self._logger.debug('-------------------- </ATTRIBUTES> ---------------------')
 
@@ -64,12 +64,12 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
             if not self._is_valid_device_os(supported_os, snmp_autoload.device_info):
                 raise Exception(self.__class__.__name__, 'Unsupported device OS')
 
-        snmp_autoload.build_root(resource_model)
-        chassis_table = snmp_autoload.build_chassis(resource_model)
-        power_port_table = snmp_autoload.build_power_modules(resource_model, chassis_table)
-        module_table = snmp_autoload.build_modules(resource_model, chassis_table)
-        sub_module_table = snmp_autoload.build_sub_modules(resource_model, module_table)
-        port_table = snmp_autoload.build_ports(resource_model, chassis_table, module_table, sub_module_table)
-        autoload_details = resource_model.build()
-        # self._log_autoload_details(autoload_details)
+            snmp_autoload.build_root(resource_model)
+            chassis_table = snmp_autoload.build_chassis(resource_model)
+            power_port_table = snmp_autoload.build_power_modules(resource_model, chassis_table)
+            module_table = snmp_autoload.build_modules(resource_model, chassis_table)
+            sub_module_table = snmp_autoload.build_sub_modules(resource_model, module_table)
+            port_table = snmp_autoload.build_ports(resource_model, chassis_table, module_table, sub_module_table)
+            autoload_details = resource_model.build()
+            # self._log_autoload_details(autoload_details)
         return autoload_details
