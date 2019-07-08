@@ -32,29 +32,20 @@ class JunosSnmpAutoload(object):
 
         self._initialize_snmp_handler()
 
-        self._logical_generic_ports = {}
-        self._physical_generic_ports = {}
-
     @property
     @lru_cache()
-    def ipv4_table(self):
+    def _ipv4_table(self):
         return {x.safe_value: x.index for x in self._snmp_service.walk(SnmpMibObject(MIBS.IP_MIB, 'ipAdEntIfIndex'))}
 
     @property
     @lru_cache()
-    def ipv6_table(self):
+    def _ipv6_table(self):
         # return {x.safe_value: x.index for x in self._snmp_service.walk(SnmpMibObject(MIBS.IPV6_MIB, 'ipAdEntIfIndex'))}
         return {x.index: x.safe_value for x in self._snmp_service.walk(SnmpMibObject(MIBS.IPV6_MIB, 'ipv6AddrTable'))}
 
-    @property
     @lru_cache()
-    def generic_physical_ports_by_name(self):
-        return {generic_port.port_name: generic_port for generic_port in self._physical_generic_ports.values()}
-
-    @property
-    @lru_cache()
-    def generic_logical_ports_by_name(self):
-        return {generic_port.port_name: generic_port for generic_port in self._logical_generic_ports.values()}
+    def _sort_generic_ports_by_name(self, generic_ports):
+        return {generic_port.port_name: generic_port for generic_port in generic_ports.values()}
 
     @property
     @lru_cache()
@@ -67,9 +58,9 @@ class JunosSnmpAutoload(object):
         for key in values:
             key_splited = str(key.index).split('.')
             if len(key_splited) == 3:
-                result_dict[key_splited[1]] = key
+                result_dict[key_splited[1]] = key.index
             elif len(key_splited) == 1:
-                result_dict[key_splited[0]] = key
+                result_dict[key_splited[0]] = key.index
         return result_dict
 
     @property
@@ -321,6 +312,8 @@ class JunosSnmpAutoload(object):
         :return:
         """
         self._logger.debug("Building generic ports")
+        physical_generic_ports = {}
+        logical_generic_ports = {}
 
         for index in self.if_indexes:
             index = int(index)
@@ -329,65 +322,70 @@ class JunosSnmpAutoload(object):
                 if generic_port.port_name and not self._port_filtered_by_name(
                         generic_port) and not self._port_filtered_by_type(generic_port):
                     if generic_port.logical_unit == '0':
-                        self._physical_generic_ports[index] = generic_port
+                        physical_generic_ports[index] = generic_port
                     else:
-                        self._logical_generic_ports[index] = generic_port
+                        logical_generic_ports[index] = generic_port
+        return physical_generic_ports, logical_generic_ports
 
-    def _associate_ipv4_addresses(self):
+    def _associate_ipv4_addresses(self, physical_generic_ports, logical_generic_ports):
         """
         Associates ipv4 with generic port
         :return:
         """
         self._logger.debug("Associate ipv4")
-        for index, ip_addr in self.ipv4_table.items():
-            if int(index) in self._logical_generic_ports:
-                logical_port = self._logical_generic_ports[int(index)]
-                physical_port = self.get_associated_phisical_port_by_name(logical_port.port_name)
+        for index, ip_addr in self._ipv4_table.items():
+            if int(index) in logical_generic_ports:
+                logical_port = logical_generic_ports[int(index)]
+                physical_port = self.get_associated_physical_port_by_name(physical_generic_ports,
+                                                                          logical_port.port_name)
                 if physical_port and ip_addr:
                     physical_port.ipv4_addresses.append(ip_addr)
 
-    def _associate_ipv6_addresses(self):
+    def _associate_ipv6_addresses(self, physical_generic_ports, logical_generic_ports):
         """
         Associate ipv6 with generic port
         :return:
         """
         self._logger.debug("Associate ipv6")
-        for index, ip_addr in self.ipv6_table:
-            if int(index) in self._logical_generic_ports:
-                logical_port = self._logical_generic_ports[int(index)]
-                physical_port = self.get_associated_phisical_port_by_name(logical_port.port_name)
+        for index, ip_addr in self._ipv6_table:
+            if int(index) in logical_generic_ports:
+                logical_port = logical_generic_ports[int(index)]
+                physical_port = self.get_associated_physical_port_by_name(physical_generic_ports,
+                                                                          logical_port.port_name)
                 if physical_port and ip_addr:
                     physical_port.ipv6_addresses.append(ip_addr)
 
-    def _associate_portchannels(self):
+    def _associate_portchannels(self, physical_generic_ports, logical_generic_ports):
         """
         Associate physical ports with the portchannel
         :return:
         """
         self._logger.debug("Associate portchannels")
-        snmp_data = self._snmp_service.get_table(SnmpMibObject(MIBS.LAG_MIB, 'dot3adAggPortAttachedAggID'))
-        for port_index in snmp_data:
-            port_index = int(port_index)
-            if port_index in self._logical_generic_ports:
-                associated_phisical_port = self.get_associated_phisical_port_by_name(
-                    self._logical_generic_ports[port_index].port_name)
-                logical_portchannel_index = snmp_data[port_index].get('dot3adAggPortAttachedAggID')
-                if logical_portchannel_index and int(logical_portchannel_index) in self._logical_generic_ports:
-                    associated_phisical_portchannel = self.get_associated_phisical_port_by_name(
-                        self._logical_generic_ports[int(logical_portchannel_index)].port_name)
-                    if associated_phisical_portchannel:
-                        associated_phisical_portchannel.is_portchannel = True
-                        if associated_phisical_port:
-                            associated_phisical_portchannel.associated_port_names.append(associated_phisical_port.name)
 
-    def _associate_adjacent(self):
+        for response in self._snmp_service.walk(SnmpMibObject(MIBS.LAG_MIB, 'dot3adAggPortAttachedAggID')):
+            port_index = int(response.index)
+            logical_portchannel_index = int(response.safe_value)
+            if port_index in logical_generic_ports:
+                if logical_portchannel_index and logical_portchannel_index in logical_generic_ports:
+                    associated_physical_portchannel = self.get_associated_physical_port_by_name(physical_generic_ports,
+                                                                                                logical_generic_ports[
+                                                                                                    logical_portchannel_index].port_name)
+                    if associated_physical_portchannel:
+                        associated_physical_portchannel.is_portchannel = True
+                        associated_physical_port = self.get_associated_physical_port_by_name(physical_generic_ports,
+                                                                                             logical_generic_ports[
+                                                                                                 port_index].port_name)
+                        if associated_physical_port:
+                            associated_physical_portchannel.associated_port_names.append(associated_physical_port.name)
+
+    def _associate_adjacent(self, physical_generic_ports, logical_generic_ports):
         for index in self.lldp_keys:
-            if int(index) in self._logical_generic_ports:
-                physical_port = self.get_associated_phisical_port_by_name(
-                    self._logical_generic_ports[int(index)].port_name)
+            if int(index) in logical_generic_ports:
+                physical_port = self.get_associated_physical_port_by_name(physical_generic_ports,
+                                                                          logical_generic_ports[int(index)].port_name)
                 self._set_adjacent(index, physical_port)
-            elif int(index) in self._physical_generic_ports:
-                physical_port = self._physical_generic_ports[int(index)]
+            elif int(index) in physical_generic_ports:
+                physical_port = physical_generic_ports[int(index)]
                 self._set_adjacent(index, physical_port)
 
     def _set_adjacent(self, index, port):
@@ -397,15 +395,17 @@ class JunosSnmpAutoload(object):
             SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemSysDesc', self.lldp_keys[index])).safe_value
         port.port_adjacent = '{0}, {1}'.format(rem_port_descr, rem_sys_descr)
 
-    def get_associated_phisical_port_by_name(self, description):
+    def get_associated_physical_port_by_name(self, physical_generic_ports, description):
         """
         Associate physical port by description
+        :param dict physical_generic_ports:
         :param description:
         :return:
         """
-        for port_name in self.generic_physical_ports_by_name:
+        phys_ports_by_name = self.sort_generic_ports_by_name(physical_generic_ports)
+        for port_name in phys_ports_by_name:
             if port_name in description:
-                return self.generic_physical_ports_by_name[port_name]
+                return phys_ports_by_name.get(port_name)
         return None
 
     def _port_filtered_by_name(self, port):
@@ -438,16 +438,16 @@ class JunosSnmpAutoload(object):
         :param dict[str, cloudshell.shell.standards.autoload_generic_models.GenericSubModule] sub_module_table:
         :rtype: dict
         """
-        self._logger.debug("Building ports")
-        self._build_generic_ports(resource_model)
-        self._associate_ipv4_addresses()
-        self._associate_ipv6_addresses()
-        self._associate_portchannels()
-        self._associate_adjacent()
+        self._logger.debug("Building Ports")
+        physical_generic_ports, logical_generic_ports = self._build_generic_ports(resource_model)
+        self._associate_ipv4_addresses(physical_generic_ports, logical_generic_ports)
+        self._associate_ipv6_addresses(physical_generic_ports, logical_generic_ports)
+        self._associate_portchannels(physical_generic_ports, logical_generic_ports)
+        self._associate_adjacent(physical_generic_ports, logical_generic_ports)
 
         parent_table = {**module_table, **sub_module_table}
         port_table = {}
-        for generic_port in self._physical_generic_ports.values():
+        for generic_port in physical_generic_ports.values():
             generic_port = generic_port
             """:type generic_port: JuniperGenericPort"""
             if generic_port.is_portchannel:

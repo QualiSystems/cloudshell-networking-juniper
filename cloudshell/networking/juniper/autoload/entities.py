@@ -10,7 +10,7 @@ class JuniperGenericPort(object):
     """
     Collect information and build Port or PortChannel
     """
-    PORTCHANNEL_NAME_PATTERN = re.compile(r'ae\d+', re.IGNORECASE)
+    PORTCHANNEL_NAME_PATTERN = re.compile(r'ae(\d+)', re.IGNORECASE)
     AUTOLOAD_MAX_STRING_LENGTH = 100
 
     def __init__(self, index, snmp_service, resource_model):
@@ -73,6 +73,14 @@ class JuniperGenericPort(object):
     def is_portchannel(self):
         return True if re.match(self.PORTCHANNEL_NAME_PATTERN, self.port_name) else False
 
+    @property
+    def portchannel_index(self):
+        match = re.match(self.PORTCHANNEL_NAME_PATTERN, self.port_name)
+        if match:
+            return match.group(1)
+        else:
+            return None
+
     def _get_associated_ipv4_address(self):
         return self._validate_attribute_value(','.join(self.ipv4_addresses))
 
@@ -126,7 +134,7 @@ class JuniperGenericPort(object):
         Build PortChannel instance using collected information
         :return:
         """
-        port_channel = self._resource_model.entities.PortChannel(self.port_phis_id,
+        port_channel = self._resource_model.entities.PortChannel(self.portchannel_index,
                                                                  name=AddRemoveVlanHelper.convert_port_name(
                                                                      self.port_name))
 
