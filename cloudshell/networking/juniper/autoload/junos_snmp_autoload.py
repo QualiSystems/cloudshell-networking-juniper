@@ -7,7 +7,7 @@ from cloudshell.networking.juniper.autoload.mib_names import MIBS
 
 import os
 import re
-from functools import reduce, lru_cache
+from functools import lru_cache
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
 
@@ -32,6 +32,18 @@ class JunosSnmpAutoload(object):
 
         self._initialize_snmp_handler()
 
+    def _initialize_snmp_handler(self):
+        """
+        Snmp settings and load specific mibs
+        :return:
+        """
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'mibs'))
+        self._snmp_service.add_mib_folder_path(path)
+        self._logger.info("Loading mibs")
+        self._snmp_service.load_mib_tables(
+            [MIBS.JUNIPER_MIB, MIBS.JUNIPER_IF_MIB, MIBS.IF_MIB, MIBS.LAG_MIB, MIBS.IP_MIB, MIBS.IPV6_MIB,
+             MIBS.LLDP_MIB, MIBS.ETHERLIKE_MIB])
+
     @property
     @lru_cache()
     def _ipv4_table(self):
@@ -49,7 +61,7 @@ class JunosSnmpAutoload(object):
 
     @property
     @lru_cache()
-    def lldp_keys(self):
+    def _lldp_keys(self):
         result_dict = {}
         try:
             values = self._snmp_service.walk(SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemPortId'))
@@ -71,17 +83,24 @@ class JunosSnmpAutoload(object):
             SnmpMibObject(MIBS.JUNIPER_MIB, 'jnxBoxDescr', '0')).safe_value
         return system_description
 
-    def _initialize_snmp_handler(self):
-        """
-        Snmp settings and load specific mibs
-        :return:
-        """
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'mibs'))
-        self._snmp_service.add_mib_folder_path(path)
-        self._logger.info("Loading mibs")
-        self._snmp_service.load_mib_tables(
-            [MIBS.JUNIPER_MIB, MIBS.JUNIPER_IF_MIB, MIBS.IF_MIB, MIBS.LAG_MIB, MIBS.IP_MIB, MIBS.IPV6_MIB,
-             MIBS.LLDP_MIB, MIBS.ETHERLIKE_MIB])
+    @property
+    @lru_cache()
+    def _content_indexes(self):
+        container_indexes = self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_MIB, 'jnxContentsContainerIndex'))
+        content_indexes = defaultdict(list)
+        for element in container_indexes:
+            content_indexes[element.safe_value].append(element.index)
+            # ct_index = value['jnxContentsContainerIndex']
+            # if ct_index in content_indexes:
+            #     content_indexes[ct_index].append(index)
+            # else:
+            #     content_indexes[ct_index] = [index]
+        return content_indexes
+
+    @property
+    @lru_cache()
+    def _if_indexes(self):
+        return map(lambda x: x.index, self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')))
 
     def build_root(self, resource_model):
         """
@@ -113,25 +132,6 @@ class JunosSnmpAutoload(object):
         print(resource_model.contact_name)
         return resource_model
 
-    @property
-    @lru_cache()
-    def content_indexes(self):
-        container_indexes = self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_MIB, 'jnxContentsContainerIndex'))
-        content_indexes = defaultdict(list)
-        for element in container_indexes:
-            content_indexes[element.safe_value].append(element.index)
-            # ct_index = value['jnxContentsContainerIndex']
-            # if ct_index in content_indexes:
-            #     content_indexes[ct_index].append(index)
-            # else:
-            #     content_indexes[ct_index] = [index]
-        return content_indexes
-
-    @property
-    @lru_cache()
-    def if_indexes(self):
-        return map(lambda x: x.index, self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')))
-
     def build_chassis(self, resource_model):
         """
         Build Chassis resources and attributes
@@ -141,8 +141,8 @@ class JunosSnmpAutoload(object):
         element_index = '1'
         chassis_table = {}
         chassis_indexes = []
-        if element_index in self.content_indexes:
-            for index in self.content_indexes[element_index]:
+        if element_index in self._content_indexes:
+            for index in self._content_indexes[element_index]:
 
                 index1, index2, index3, index4 = index.split('.')[:4]
                 chassis_id = index2
@@ -180,8 +180,8 @@ class JunosSnmpAutoload(object):
         element_index = "2"
         power_port_table = {}
         power_port_indexes = []
-        if element_index in self.content_indexes:
-            for index in self.content_indexes[element_index]:
+        if element_index in self._content_indexes:
+            for index in self._content_indexes[element_index]:
                 index1, index2, index3, index4 = index.split(".")[:4]
 
                 power_port_id = index2
@@ -227,8 +227,8 @@ class JunosSnmpAutoload(object):
         element_index = "7"
         module_table = {}
         module_indexes = []
-        if element_index in self.content_indexes:
-            for index in self.content_indexes[element_index]:
+        if element_index in self._content_indexes:
+            for index in self._content_indexes[element_index]:
                 # content_data = self._snmp_service.get_properties("JUNIPER-MIB", index,
                 #                                                  modules_snmp_attributes).get(index)
                 index1, index2, index3, index4 = index.split(".")[:4]
@@ -258,6 +258,19 @@ class JunosSnmpAutoload(object):
                         module_table['.'.join([module_id, '0'])] = module
         return module_table
 
+    def _get_submodule_ids(self, element_indexes):
+        """ Get all sub modules ids based on sub_modules types/prefixes indexes
+            Sequences of types is important (from less important to more important)
+        """
+
+        res = {}
+        for prefix in element_indexes:
+            value = self._content_indexes.get(prefix, [])
+
+            res.update({i.split(".", 1)[-1]: i for i in value})
+
+        return res.values()
+
     def build_sub_modules(self, resource_model, module_table):
         """
         Build SubModules resources and attributes
@@ -272,7 +285,8 @@ class JunosSnmpAutoload(object):
 
         element_indexes = ["8", "20"]
         sub_module_table = {}
-        for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
+        # for index in reduce(lambda x, y: x + self.content_indexes.get(y, []), element_indexes, []):
+        for index in self._get_submodule_ids(element_indexes):
             # content_data = self._snmp_service.get_propert("JUNIPER-MIB", index,
             #                                                  sub_modules_snmp_attributes).get(index)
             index1, index2, index3, index4 = index.split(".")[:4]
@@ -315,7 +329,7 @@ class JunosSnmpAutoload(object):
         physical_generic_ports = {}
         logical_generic_ports = {}
 
-        for index in self.if_indexes:
+        for index in self._if_indexes:
             index = int(index)
             if index != 0:
                 generic_port = JuniperGenericPort(index, self._snmp_service, resource_model)
@@ -379,7 +393,7 @@ class JunosSnmpAutoload(object):
                             associated_physical_portchannel.associated_port_names.append(associated_physical_port.name)
 
     def _associate_adjacent(self, physical_generic_ports, logical_generic_ports):
-        for index in self.lldp_keys:
+        for index in self._lldp_keys:
             if int(index) in logical_generic_ports:
                 physical_port = self.get_associated_physical_port_by_name(physical_generic_ports,
                                                                           logical_generic_ports[int(index)].port_name)
@@ -390,9 +404,9 @@ class JunosSnmpAutoload(object):
 
     def _set_adjacent(self, index, port):
         rem_port_descr = self._snmp_service.get_property(
-            SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemPortDesc', self.lldp_keys[index])).safe_value
+            SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemPortDesc', self._lldp_keys[index])).safe_value
         rem_sys_descr = self._snmp_service.get_property(
-            SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemSysDesc', self.lldp_keys[index])).safe_value
+            SnmpMibObject(MIBS.LLDP_MIB, 'lldpRemSysDesc', self._lldp_keys[index])).safe_value
         port.port_adjacent = '{0}, {1}'.format(rem_port_descr, rem_sys_descr)
 
     def get_associated_physical_port_by_name(self, physical_generic_ports, description):
@@ -402,7 +416,7 @@ class JunosSnmpAutoload(object):
         :param description:
         :return:
         """
-        phys_ports_by_name = self.sort_generic_ports_by_name(physical_generic_ports)
+        phys_ports_by_name = self._sort_generic_ports_by_name(physical_generic_ports)
         for port_name in phys_ports_by_name:
             if port_name in description:
                 return phys_ports_by_name.get(port_name)

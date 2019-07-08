@@ -74,7 +74,7 @@ class JuniperGenericPort(object):
         return True if re.match(self.PORTCHANNEL_NAME_PATTERN, self.port_name) else False
 
     @property
-    def portchannel_index(self):
+    def _portchannel_index(self):
         match = re.match(self.PORTCHANNEL_NAME_PATTERN, self.port_name)
         if match:
             return match.group(1)
@@ -134,7 +134,7 @@ class JuniperGenericPort(object):
         Build PortChannel instance using collected information
         :return:
         """
-        port_channel = self._resource_model.entities.PortChannel(self.portchannel_index,
+        port_channel = self._resource_model.entities.PortChannel(self._portchannel_index,
                                                                  name=AddRemoveVlanHelper.convert_port_name(
                                                                      self.port_name))
 
