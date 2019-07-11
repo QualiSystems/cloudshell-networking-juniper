@@ -89,7 +89,7 @@ class JunosSnmpAutoload(object):
     @property
     @lru_cache()
     def _if_indexes(self):
-        return map(lambda x: x.index, self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')))
+        return map(lambda x: int(x.index), self._snmp_service.walk(SnmpMibObject(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')))
 
     def build_root(self, resource_model):
         """
@@ -319,7 +319,6 @@ class JunosSnmpAutoload(object):
         logical_generic_ports = {}
 
         for index in self._if_indexes:
-            index = int(index)
             if index != 0:
                 generic_port = JuniperGenericPort(index, self._snmp_service, resource_model)
                 if generic_port.port_name and not self._port_filtered_by_name(
@@ -392,7 +391,6 @@ class JunosSnmpAutoload(object):
             if logical_port:
                 physical_port = self._get_associated_physical_port_by_name(physical_generic_ports,
                                                                            logical_port.port_name)
-
             else:
                 physical_port = physical_generic_ports.get(index)
 
@@ -467,7 +465,11 @@ class JunosSnmpAutoload(object):
                 port_table[generic_port.index] = port_channel
             else:
                 port = generic_port.get_port()
-                parent = parent_table.get('.'.join([generic_port.fpc_id, generic_port.pic_id]))
+                if int(generic_port.fpc_id) > 0:
+                    parent = parent_table.get('.'.join([generic_port.fpc_id, generic_port.pic_id]))
+                else:
+                    parent = chassis_table.values()[0]
+
                 if parent:
                     parent.connect_port(port)
                     port_table[generic_port.index] = port

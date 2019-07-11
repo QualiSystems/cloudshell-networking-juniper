@@ -41,6 +41,7 @@ class JuniperGenericPort(object):
         return self._get_snmp_attribute(MIBS.JUNIPER_IF_MIB, 'ifChassisPort')
 
     @property
+    @lru_cache()
     def port_description(self):
         return self._get_snmp_attribute('IF-MIB', 'ifAlias')
 
