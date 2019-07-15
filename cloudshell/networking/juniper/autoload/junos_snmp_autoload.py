@@ -468,7 +468,7 @@ class JunosSnmpAutoload(object):
                 if int(generic_port.fpc_id) > 0:
                     parent = parent_table.get('.'.join([generic_port.fpc_id, generic_port.pic_id]))
                 else:
-                    parent = chassis_table.values()[0]
+                    parent = next(iter(chassis_table.values()))
 
                 if parent:
                     parent.connect_port(port)

@@ -8,7 +8,7 @@ from cloudshell.networking.juniper.command_actions.commit_rollback_actions impor
 
 class JuniperConfigurationFlow(AbstractConfigurationFlow):
     def __init__(self, resource_config, logger, cli_configurator):
-        super().__init__(resource_config, logger)
+        super().__init__(logger, resource_config)
         self.cli_configurator = cli_configurator
 
     @property
@@ -57,7 +57,7 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         if not path:
             raise Exception(self.__class__.__name__, 'Config source cannot be empty')
 
-        with self.cli_configurator.self.config_mode_service() as cli_service:
+        with self.cli_configurator.config_mode_service() as cli_service:
             restore_actions = SaveRestoreActions(cli_service, self._logger)
             commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
             try:
