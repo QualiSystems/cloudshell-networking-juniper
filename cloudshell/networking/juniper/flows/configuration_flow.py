@@ -8,7 +8,7 @@ from cloudshell.networking.juniper.command_actions.commit_rollback_actions impor
 
 class JuniperConfigurationFlow(AbstractConfigurationFlow):
     def __init__(self, resource_config, logger, cli_configurator):
-        super().__init__(logger, resource_config)
+        super(JuniperConfigurationFlow, self).__init__(logger, resource_config)
         self.cli_configurator = cli_configurator
 
     @property

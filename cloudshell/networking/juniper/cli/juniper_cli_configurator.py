@@ -13,7 +13,7 @@ class JuniperCliConfigurator(AbstractModeConfigurator):
     REGISTERED_SESSIONS = (JuniperSSHSession, JuniperTelnetSession)
 
     def __init__(self, cli, resource_config, logger):
-        super().__init__(resource_config, logger, cli)
+        super(JuniperCliConfigurator, self).__init__(resource_config, logger, cli)
         self.modes = CommandModeHelper.create_command_mode(resource_config)
 
     @property

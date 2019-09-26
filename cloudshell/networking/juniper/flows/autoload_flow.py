@@ -13,7 +13,7 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
         :param cloudshell.snmp.snmp_configurator.EnableDisableSnmpConfigurator snmp_configurator:
         :param logging.Logger logger:
         """
-        super().__init__(logger)
+        super(JunOSAutoloadFlow, self).__init__(logger)
         self._snmp_configurator = snmp_configurator
 
     def _log_device_details(self, autoload_details):

@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import sys
 from collections import defaultdict
 
 from cloudshell.networking.juniper.autoload.entities import JuniperGenericPort
@@ -7,8 +8,12 @@ from cloudshell.networking.juniper.autoload.mib_names import MIBS
 
 import os
 import re
-from functools import lru_cache
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
+
+if sys.version_info >= (3, 0):
+    from functools import lru_cache
+else:
+    from functools32 import lru_cache
 
 
 class JunosSnmpAutoload(object):
@@ -67,7 +72,7 @@ class JunosSnmpAutoload(object):
     @property
     @lru_cache()
     def device_info(self):
-        system_description = self._snmp_service.get_property(SnmpMibObject('SNMPv2-MIB', 'sysDescr', '0')).safe_value
+        system_description = self._snmp_service.get_property(SnmpMibObject(MIBS.SNMPV2_MIB, 'sysDescr', '0')).safe_value
         system_description += self._snmp_service.get_property(
             SnmpMibObject(MIBS.JUNIPER_MIB, 'jnxBoxDescr', '0')).safe_value
         return system_description
@@ -118,7 +123,6 @@ class JunosSnmpAutoload(object):
         resource_model.os_version = os_version
         resource_model.vendor = vendor
         resource_model.model = model
-        print(resource_model.contact_name)
         return resource_model
 
     def build_chassis(self, resource_model):
@@ -454,7 +458,8 @@ class JunosSnmpAutoload(object):
         self._associate_portchannels(physical_generic_ports, logical_generic_ports)
         self._associate_adjacent(physical_generic_ports, logical_generic_ports)
 
-        parent_table = {**module_table, **sub_module_table}
+        parent_table = module_table.copy()
+        parent_table.update(sub_module_table)
         port_table = {}
         for generic_port in physical_generic_ports.values():
             generic_port = generic_port

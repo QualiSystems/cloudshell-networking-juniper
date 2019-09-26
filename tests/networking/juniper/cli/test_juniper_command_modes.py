@@ -5,7 +5,7 @@ from mock import Mock, patch, call
 
 from cloudshell.networking.juniper.cli.juniper_command_modes import DefaultCommandMode, \
     ConfigCommandMode
-from cloudshell.cli.command_mode import CommandMode
+from cloudshell.cli.service.command_mode import CommandMode
 
 
 # class TestJuniperCliCommandMode(TestCase):
@@ -14,11 +14,11 @@ from cloudshell.cli.command_mode import CommandMode
 #         self._api = Mock()
 #         self._instance = self.create_instance()
 #
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CommandMode.__init__')
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CliCommandMode.enter_action_map')
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CliCommandMode.exit_action_map')
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CliCommandMode.enter_error_map')
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CliCommandMode.exit_error_map')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CommandMode.__init__')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CliCommandMode.enter_action_map')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CliCommandMode.exit_action_map')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CliCommandMode.enter_error_map')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CliCommandMode.exit_error_map')
 #     def create_instance(self, exit_error_map, enter_error_map, exit_action_map, enter_action_map, command_mode_init):
 #         enter_action_map_result = Mock()
 #         enter_action_map.return_value = enter_action_map_result
@@ -67,11 +67,11 @@ class TestJuniperDefaultCommandMode(TestCase):
         self._api = Mock()
         self._instance = self.create_instance()
 
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CommandMode.__init__')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.DefaultCommandMode.enter_action_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.DefaultCommandMode.exit_action_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.DefaultCommandMode.enter_error_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.DefaultCommandMode.exit_error_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CommandMode.__init__')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.DefaultCommandMode.enter_action_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.DefaultCommandMode.exit_action_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.DefaultCommandMode.enter_error_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.DefaultCommandMode.exit_error_map')
     def create_instance(self, exit_error_map, enter_error_map, exit_action_map, enter_action_map, command_mode_init):
         enter_action_map_result = Mock()
         enter_action_map.return_value = enter_action_map_result
@@ -82,7 +82,7 @@ class TestJuniperDefaultCommandMode(TestCase):
         exit_error_map_result = Mock()
         exit_error_map.return_value = exit_error_map_result
 
-        instance = DefaultCommandMode(self._resource_config, self._api)
+        instance = DefaultCommandMode(self._resource_config)
         command_mode_init.assert_called_once_with(instance, DefaultCommandMode.PROMPT,
                                                   DefaultCommandMode.ENTER_COMMAND,
                                                   DefaultCommandMode.EXIT_COMMAND,
@@ -95,7 +95,6 @@ class TestJuniperDefaultCommandMode(TestCase):
 
     def test_init(self):
         self.assertIs(self._instance.resource_config, self._resource_config)
-        self.assertIs(self._instance._api, self._api)
 
     def test_enter_action(self):
         cli_operations = Mock()
@@ -125,11 +124,11 @@ class TestJuniperConfigCommandMode(TestCase):
         self._api = Mock()
         self._instance = self.create_instance()
 
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CommandMode.__init__')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.ConfigCommandMode.enter_action_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.ConfigCommandMode.exit_action_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.ConfigCommandMode.enter_error_map')
-    @patch('cloudshell.networking.juniper.cli.junipr_command_modes.ConfigCommandMode.exit_error_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CommandMode.__init__')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.ConfigCommandMode.enter_action_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.ConfigCommandMode.exit_action_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.ConfigCommandMode.enter_error_map')
+    @patch('cloudshell.networking.juniper.cli.juniper_command_modes.ConfigCommandMode.exit_error_map')
     def create_instance(self, exit_error_map, enter_error_map, exit_action_map, enter_action_map, command_mode_init):
         enter_action_map_result = Mock()
         enter_action_map.return_value = enter_action_map_result
@@ -140,7 +139,7 @@ class TestJuniperConfigCommandMode(TestCase):
         exit_error_map_result = Mock()
         exit_error_map.return_value = exit_error_map_result
 
-        instance = ConfigCommandMode(self._resource_config, self._api)
+        instance = ConfigCommandMode(self._resource_config)
         command_mode_init.assert_called_once_with(instance, ConfigCommandMode.PROMPT,
                                                   ConfigCommandMode.ENTER_COMMAND,
                                                   ConfigCommandMode.EXIT_COMMAND,
@@ -153,7 +152,6 @@ class TestJuniperConfigCommandMode(TestCase):
 
     def test_init(self):
         self.assertIs(self._instance.resource_config, self._resource_config)
-        self.assertIs(self._instance._api, self._api)
 
     def test_enter_action_map(self):
         pass
@@ -184,7 +182,7 @@ class TestCommandModeRelations(TestCase):
 #     def setUp(self):
 #         pass
 #
-#     @patch('cloudshell.networking.juniper.cli.junipr_command_modes.CommandMode.__init__')
+#     @patch('cloudshell.networking.juniper.cli.juniper_command_modes.CommandMode.__init__')
 #     def test_init(self, command_mode_init):
 #         instance = EditSnmpCommandMode()
 #         command_mode_init.assert_called_once_with(instance, EditSnmpCommandMode.PROMPT,

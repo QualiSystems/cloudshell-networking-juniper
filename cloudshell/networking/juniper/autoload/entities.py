@@ -1,9 +1,13 @@
 import re
-from functools import lru_cache
-
+import sys
 from cloudshell.networking.juniper.autoload.mib_names import MIBS
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import AddRemoveVlanHelper
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
+
+if sys.version_info >= (3, 0):
+    from functools import lru_cache
+else:
+    from functools32 import lru_cache
 
 
 class JuniperGenericPort(object):

@@ -135,7 +135,7 @@ class VlanRangeOperations(object):
         :return:
         """
         range_list = []
-        for name, vlan_range in range_dict.iteritems():
+        for name, vlan_range in range_dict.items():
             range_list.append(VlanRange(VlanRange.range_from_string(vlan_range), name=name))
         return range_list
 

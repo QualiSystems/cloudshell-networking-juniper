@@ -13,7 +13,7 @@ class JuniperConnectivity(AbstractConnectivityFlow):
         :param logger:
         """
         self._cli_configurator = cli_configurator
-        super().__init__(logger)
+        super(JuniperConnectivity, self).__init__(logger)
 
     def _add_vlan_flow(self, vlan_range, port_mode, port_name, qnq, c_tag):
         port = AddRemoveVlanHelper.extract_port_name(port_name)
