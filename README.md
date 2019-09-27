@@ -1,8 +1,9 @@
 # cloudshell-networking-juniper
-[![Build status](https://travis-ci.org/QualiSystems/cloudshell-networking-juniper.svg?branch=master)](https://travis-ci.org/QualiSystems/cloudshell-networking-juniper)
-[![Coverage Status](https://coveralls.io/repos/github/QualiSystems/cloudshell-networking-juniper/badge.svg?branch=master)](https://coveralls.io/github/QualiSystems/cloudshell-networking-juniper)
-[![PyPI version](https://badge.fury.io/py/cloudshell-networking-juniper.svg)](https://badge.fury.io/py/cloudshell-networking-juniper)
-[![Dependency Status](https://dependencyci.com/github/QualiSystems/cloudshell-networking-juniper/badge)](https://dependencyci.com/github/QualiSystems/cloudshell-networking-juniper)
-[![Stories in Ready](https://badge.waffle.io/QualiSystems/cloudshell-networking-juniper.svg?label=ready&title=Ready)](http://waffle.io/QualiSystems/cloudshell-networking-juniper)
+[![Build status](https://travis-ci.org/QualiSystems/cloudshell-networking-juniper.svg?branch=dev)](https://travis-ci.org/QualiSystems/cloudshell-networking-juniper)
+[![codecov](https://codecov.io/gh/QualiSystems/cloudshell-networking-juniper/branch/dev/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-networking-juniper)
+[![PyPI version](https://badge.fury.io/py/cloudshell-package-repo-template.svg)](https://badge.fury.io/py/cloudshell-networking-juniper)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 Cloud Shell standart networking library for Juniper
+
+We use tox and pre-commit for testing. [Services description](https://github.com/QualiSystems/cloudshell-package-repo-template#description-of-services)
