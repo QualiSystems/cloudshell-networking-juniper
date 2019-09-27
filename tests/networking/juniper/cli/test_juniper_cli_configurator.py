@@ -1,9 +1,17 @@
 from unittest import TestCase
 
-from mock import Mock, patch
+from cloudshell.networking.juniper.cli.juniper_cli_configurator import (
+    JuniperCliConfigurator,
+)
+from cloudshell.networking.juniper.cli.juniper_command_modes import (
+    ConfigCommandMode,
+    DefaultCommandMode,
+)
 
-from cloudshell.networking.juniper.cli.juniper_cli_configurator import JuniperCliConfigurator
-from cloudshell.networking.juniper.cli.juniper_command_modes import DefaultCommandMode, ConfigCommandMode
+try:
+    from unittest.mock import Mock, patch
+except ImportError:
+    from mock import Mock, patch
 
 
 class TestJuniperCliConfigurator(TestCase):
@@ -14,14 +22,23 @@ class TestJuniperCliConfigurator(TestCase):
         self._api = Mock()
         self._enable_mode = Mock()
         self._config_mode = Mock()
-        self._command_modes = {DefaultCommandMode: self._enable_mode, ConfigCommandMode: self._config_mode}
+        self._command_modes = {
+            DefaultCommandMode: self._enable_mode,
+            ConfigCommandMode: self._config_mode,
+        }
         self._instance = self._create_instance()
 
-    @patch('cloudshell.networking.juniper.cli.juniper_cli_configurator.CommandModeHelper')
+    @patch(
+        "cloudshell.networking.juniper.cli.juniper_cli_configurator.CommandModeHelper"
+    )
     def _create_instance(self, command_mode_helper):
         command_mode_helper.create_command_mode.return_value = self._command_modes
-        instance = JuniperCliConfigurator(self._cli, self._resource_config, self._logger)
-        command_mode_helper.create_command_mode.assert_called_once_with(self._resource_config)
+        instance = JuniperCliConfigurator(
+            self._cli, self._resource_config, self._logger
+        )
+        command_mode_helper.create_command_mode.assert_called_once_with(
+            self._resource_config
+        )
         return instance
 
     def test_init(self):

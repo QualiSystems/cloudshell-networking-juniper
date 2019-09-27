@@ -7,4 +7,4 @@ class MIBS:
     IPV6_MIB = "IPV6-MIB"
     LLDP_MIB = "LLDP-MIB"
     SNMPV2_MIB = "SNMPv2-MIB"
-    ETHERLIKE_MIB = 'EtherLike-MIB'
+    ETHERLIKE_MIB = "EtherLike-MIB"

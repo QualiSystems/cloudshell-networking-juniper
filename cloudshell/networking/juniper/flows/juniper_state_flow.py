@@ -1,5 +1,6 @@
-from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 from cloudshell.shell.flows.state.basic_flow import StateFlow
+
+from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
 
 class JuniperStateFlow(StateFlow):
