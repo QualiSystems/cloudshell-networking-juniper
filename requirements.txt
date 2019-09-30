@@ -1,2 +1,4 @@
-cloudshell-networking>=5.1,<5.2
-cloudshell-networking-devices>=2.7,<2.8
+cloudshell-shell-flows>=1.0,<2
+cloudshell-cli>=4.0,<5
+cloudshell-snmp>=4.0,<5
+functools32; python_version <= '2.7'
