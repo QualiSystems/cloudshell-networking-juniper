@@ -34,9 +34,10 @@ class TestSaveRestoreActions(TestCase):
         command_template_executor.return_value = execute_command
         execute_command.execute_command.return_value = output
         path = Mock()
-        self.assertIs(self._instance.save_running(path), output)
-        command_template_executor.assert_called_once_with(
-            self._cli_service, command_template.SAVE
+        password = "password"
+        self.assertIs(self._instance.save_running(path, password), output)
+        self._check_password_action_map(
+            command_template_executor.call_args, command_template.SAVE
         )
         execute_command.execute_command.assert_called_once_with(dst_path=path)
 
@@ -55,10 +56,23 @@ class TestSaveRestoreActions(TestCase):
         execute_command.execute_command.return_value = output
         restore_type = Mock()
         path = Mock()
-        self.assertIs(self._instance.restore_running(restore_type, path), output)
-        command_template_executor.assert_called_once_with(
-            self._cli_service, command_template.RESTORE
+        password = "password"
+        self.assertIs(
+            self._instance.restore_running(restore_type, path, password), output
+        )
+        command_template_executor.assert_called_once()
+        self._check_password_action_map(
+            command_template_executor.call_args, command_template.RESTORE
         )
         execute_command.execute_command.assert_called_once_with(
             restore_type=restore_type, src_path=path
         )
+
+    def _check_password_action_map(self, call_args, command_template):
+        args, kwargs = call_args
+        self.assertEqual(args[0], self._cli_service)
+        self.assertEqual(args[1], command_template)
+        self.assertEqual(len(kwargs), 1)
+        act_map = kwargs["action_map"]
+        self.assertEqual(len(list(act_map.keys())), 1)
+        self.assertEqual(next(iter(act_map.keys())), "[Pp]assword")
