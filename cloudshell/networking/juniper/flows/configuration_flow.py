@@ -7,7 +7,16 @@ from cloudshell.networking.juniper.command_actions.commit_rollback_actions impor
 from cloudshell.networking.juniper.command_actions.save_restore_actions import (
     SaveRestoreActions,
 )
+from cloudshell.networking.juniper.helpers.errors import (
+    BaseJuniperError,
+    NotSupportedJunOSError,
+)
 from cloudshell.networking.juniper.helpers.save_restore_helper import SaveRestoreHelper
+from cloudshell.networking.juniper.helpers.url_helper import (
+    get_url_password,
+    get_url_scheme,
+    get_url_without_password,
+)
 
 
 class JuniperConfigurationFlow(AbstractConfigurationFlow):
@@ -32,12 +41,16 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         Forwarding management name
         :return: Saved configuration path
         """
+        if (get_url_scheme(folder_path)).lower() == "tftp":
+            raise NotSupportedJunOSError("TFTP is not supported by JunOS")
         SaveRestoreHelper.validate_configuration_type(configuration_type)
 
         self._logger.info("Save configuration to file {0}".format(folder_path))
         with self.cli_configurator.config_mode_service() as cli_service:
             save_action = SaveRestoreActions(cli_service, self._logger)
-            save_action.save_running(folder_path)
+            save_action.save_running(
+                get_url_without_password(folder_path), get_url_password(folder_path)
+            )
         return folder_path
 
     def _restore_flow(
@@ -56,6 +69,10 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         Forwarding management name
         :return:
         """
+        if not path:
+            raise BaseJuniperError("Config source cannot be empty")
+        if (get_url_scheme(path)).lower() == "tftp":
+            raise NotSupportedJunOSError("TFTP is not supported by JunOS")
         SaveRestoreHelper.validate_configuration_type(configuration_type)
 
         restore_method = restore_method or "override"
@@ -66,21 +83,19 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         elif restore_method == "override":
             restore_type = restore_method
         else:
-            raise Exception(
-                self.__class__.__name__,
+            raise BaseJuniperError(
                 "Restore method '{}' is wrong! Use 'Append' or 'Override'".format(
                     restore_method
-                ),
+                )
             )
-
-        if not path:
-            raise Exception(self.__class__.__name__, "Config source cannot be empty")
 
         with self.cli_configurator.config_mode_service() as cli_service:
             restore_actions = SaveRestoreActions(cli_service, self._logger)
             commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
             try:
-                restore_actions.restore_running(restore_type, path)
+                restore_actions.restore_running(
+                    restore_type, get_url_without_password(path), get_url_password(path)
+                )
                 commit_rollback_actions.commit()
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
