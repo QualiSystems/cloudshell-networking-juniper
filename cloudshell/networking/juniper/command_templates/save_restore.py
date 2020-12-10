@@ -11,6 +11,14 @@ _ERROR_MAP = OrderedDict(
     [(r"[Ee]rror\ssaving\sconfiguration", "Error saving configuration")]
 )
 _ERROR_MAP.update(ERROR_MAP)
+_ACTION_MAP = OrderedDict(
+    [
+        (
+            r"(?i)Are you sure you want to continue connecting \(yes/no\)\?",
+            lambda session, logger: session.send_line("yes", logger),
+        )
+    ]
+)
 
 SAVE = CommandTemplate('save "{dst_path}"', action_map=ACTION_MAP, error_map=_ERROR_MAP)
 RESTORE = CommandTemplate(
