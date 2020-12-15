@@ -19,8 +19,11 @@ _ACTION_MAP = OrderedDict(
         )
     ]
 )
+_ACTION_MAP.update(ACTION_MAP)
 
-SAVE = CommandTemplate('save "{dst_path}"', action_map=ACTION_MAP, error_map=_ERROR_MAP)
+SAVE = CommandTemplate(
+    'save "{dst_path}"', action_map=_ACTION_MAP, error_map=_ERROR_MAP
+)
 RESTORE = CommandTemplate(
-    'load {restore_type} "{src_path}"', action_map=ACTION_MAP, error_map=_ERROR_MAP
+    'load {restore_type} "{src_path}"', action_map=_ACTION_MAP, error_map=_ERROR_MAP
 )
