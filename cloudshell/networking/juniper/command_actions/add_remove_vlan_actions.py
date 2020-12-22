@@ -185,9 +185,13 @@ class AddRemoveVlanActions(object):
         :return:
         """
         vlan_dict = {}
-        out = CommandTemplateExecutor(
-            self._cli_service, command_template.SHOW_VLANS
-        ).execute_command()
+        try:
+            out = CommandTemplateExecutor(
+                self._cli_service, command_template.SHOW_VLANS
+            ).execute_command()
+        except CommandExecutionException:
+            raise Exception("Device doesn't support VLAN configuration")
+
         pattern = r"(?P<vlan_name>.+)\s+{\s+vlan-(id|range)\s+(?P<vlan_id>\d+(-\d+)?);"
         iterator = re.finditer(pattern, out, flags=re.MULTILINE | re.IGNORECASE)
         for match in iterator:
