@@ -1,5 +1,8 @@
 from collections import OrderedDict
 
+import six
+import xmltodict
+
 
 class AddRemoveVlanHelper(object):
     PORT_NAME_CHAR_REPLACEMENT = OrderedDict([(":", "--"), ("/", "-")])
@@ -136,6 +139,19 @@ class VlanRange(object):
         """
         return "{0}-{1}".format(self.first_element, self.last_element)
 
+    def has_any_common_members(self, other):
+        """Check if VLAN ranges have any common members.
+
+        :type other: VlanRange
+        :rtype: bool
+        """
+        if not isinstance(other, VlanRange):
+            raise NotImplementedError("You can compare only VlanRange objects")
+
+        vlan_ids = set(range(self.first_element, self.last_element + 1))
+        other_vlan_ids = set(range(other.first_element, other.last_element + 1))
+        return bool(vlan_ids & other_vlan_ids)
+
     def __str__(self):
         return self.to_string()
 
@@ -197,3 +213,33 @@ class VlanRangeOperations(object):
                 if target_range.intersect(source_range):
                     intersection_list.append(source_range)
         return intersection_list
+
+
+def is_vlan_used(vlan_range, command_output):
+    """Check that VLAN is used by the interfaces or not.
+
+    :param str vlan_range: '2', '4', '5-7', ...
+    :param str command_output: output of the command `show interfaces | display xml`
+    :rtype: bool
+    """
+    output_dict = xmltodict.parse(command_output)
+    interfaces = output_dict["rpc-reply"]["configuration"]["interfaces"]["interface"]
+    vlan_range_inst = VlanRange(VlanRange.range_from_string(vlan_range))
+
+    result = False
+    for interface in interfaces:
+        try:
+            vlans = interface["unit"]["family"]["ethernet-switching"]["vlan"]["members"]
+            if isinstance(vlans, six.string_types):
+                vlans = [vlans]
+        except KeyError:
+            continue
+        else:
+            for vr in map(VlanRange, map(VlanRange.range_from_string, vlans)):
+                result = vlan_range_inst.has_any_common_members(vr)
+                if result:
+                    break
+            if result:
+                break
+
+    return result

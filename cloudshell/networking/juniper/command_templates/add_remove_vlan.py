@@ -50,5 +50,8 @@ SHOW_VLAN_INTERFACES = CommandTemplate(
     "run show vlans {vlan_name}", error_map=ERROR_MAP
 )
 SHOW_INTERFACE = CommandTemplate("show interfaces {port_name}", error_map=ERROR_MAP)
+SHOW_INTERFACES_XML = CommandTemplate(
+    "show interfaces | display xml", error_map=ERROR_MAP
+)
 SHOW_VLANS = CommandTemplate("show vlans", error_map=ERROR_MAP)
 SHOW_SPECIFIC_VLAN = CommandTemplate("show vlans {vlan_name}", error_map=ERROR_MAP)
