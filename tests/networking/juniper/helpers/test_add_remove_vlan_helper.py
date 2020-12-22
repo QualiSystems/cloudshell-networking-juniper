@@ -3,6 +3,7 @@ from unittest import TestCase
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import (
     VlanRange,
     VlanRangeOperations,
+    is_vlan_used,
 )
 
 
@@ -87,3 +88,123 @@ class TestVlanRangeOperations(TestCase):
             VlanRangeOperations.find_intersection([test_range], range_list),
             [VlanRange((150, 200)), VlanRange((250, 270))],
         )
+
+
+class TestGetInterfacesWithVlanId(TestCase):
+    COMMAND_OUTPUT = """<rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
+        <configuration junos:changed-seconds="0" junos:changed-localtime="0">
+                <interfaces>
+                    <interface>
+                        <name>ge-0/0/0</name>
+                        <unit>
+                            <name>0</name>
+                            <family>
+                                <ethernet-switching unsupported="unsupported">
+                                    <port-mode>access</port-mode>
+                                    <vlan>
+                                        <members>2-5</members>
+                                        <members>7</members>
+                                    </vlan>
+                                </ethernet-switching>
+                            </family>
+                        </unit>
+                    </interface>
+                    <interface>
+                        <name>ge-0/0/1</name>
+                        <unit>
+                            <name>0</name>
+                            <family>
+                                <ethernet-switching unsupported="unsupported">
+                                    <port-mode>access</port-mode>
+                                    <vlan>
+                                        <members>2-5</members>
+                                    </vlan>
+                                </ethernet-switching>
+                            </family>
+                        </unit>
+                    </interface>
+                    <interface>
+                        <name>fxp0</name>
+                        <unit>
+                            <name>0</name>
+                            <family>
+                                <inet>
+                                    <address>
+                                        <name>192.168.101.101/24</name>
+                                    </address>
+                                </inet>
+                            </family>
+                        </unit>
+                    </interface>
+                </interfaces>
+        </configuration>
+        <cli>
+            <banner>[edit]</banner>
+        </cli>
+    </rpc-reply>
+    """
+
+    def test_interface_in_range(self):
+        self.assertTrue(is_vlan_used("4", self.COMMAND_OUTPUT))
+        self.assertTrue(is_vlan_used("2", self.COMMAND_OUTPUT))
+
+    def test_interface_single_vlan(self):
+        self.assertTrue(is_vlan_used("7", self.COMMAND_OUTPUT))
+
+    def test_single_vlan_not_in_interfaces(self):
+        self.assertFalse(is_vlan_used("6", self.COMMAND_OUTPUT))
+
+    def test_vlan_range_intersect(self):
+        self.assertTrue(is_vlan_used("3-4", self.COMMAND_OUTPUT))
+        self.assertTrue(is_vlan_used("6-8", self.COMMAND_OUTPUT))
+
+    def test_vlan_range_not_intersect(self):
+        self.assertFalse(is_vlan_used("8-9", self.COMMAND_OUTPUT))
+
+    def test_without_vlans(self):
+        command_output = """<rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
+            <configuration junos:changed-seconds="0" junos:changed-localtime="0">
+                    <interfaces>
+                        <interface>
+                            <name>ge-0/0/0</name>
+                            <unit>
+                                <name>0</name>
+                                <family>
+                                    <ethernet-switching unsupported="unsupported">
+                                        <port-mode>access</port-mode>
+                                    </ethernet-switching>
+                                </family>
+                            </unit>
+                        </interface>
+                        <interface>
+                            <name>ge-0/0/1</name>
+                            <unit>
+                                <name>0</name>
+                                <family>
+                                    <ethernet-switching unsupported="unsupported">
+                                        <port-mode>access</port-mode>
+                                    </ethernet-switching>
+                                </family>
+                            </unit>
+                        </interface>
+                        <interface>
+                            <name>fxp0</name>
+                            <unit>
+                                <name>0</name>
+                                <family>
+                                    <inet>
+                                        <address>
+                                            <name>192.168.101.101/24</name>
+                                        </address>
+                                    </inet>
+                                </family>
+                            </unit>
+                        </interface>
+                    </interfaces>
+            </configuration>
+            <cli>
+                <banner>[edit]</banner>
+            </cli>
+        </rpc-reply>
+        """
+        self.assertFalse(is_vlan_used("2", command_output))
