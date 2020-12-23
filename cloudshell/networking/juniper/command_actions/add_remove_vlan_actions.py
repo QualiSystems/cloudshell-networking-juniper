@@ -8,6 +8,7 @@ from cloudshell.cli.session.session_exceptions import CommandExecutionException
 from cloudshell.networking.juniper.command_templates import (
     add_remove_vlan as command_template,
 )
+from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import is_vlan_used
 
 
 class AddRemoveVlanActions(object):
@@ -76,6 +77,21 @@ class AddRemoveVlanActions(object):
             self._logger.debug("Created vlan {0}, id {1}".format(vlan_name, vlan_range))
         return output
 
+    def is_vlan_used(self, vlan_name):
+        try:
+            result = bool(self.get_vlan_ports(vlan_name))
+        except CommandExecutionException:
+            output = self.show_interfaces_xml()
+            vlan_range = self.get_vlans()[vlan_name]
+            result = is_vlan_used(vlan_range, output)
+        return result
+
+    def show_interfaces_xml(self):
+        output = CommandTemplateExecutor(
+            self._cli_service, command_template.SHOW_INTERFACES_XML
+        ).execute_command()
+        return re.search(r"<rpc-reply.+</rpc-reply>", output, flags=re.DOTALL).group()
+
     def delete_vlan(self, vlan_name):
         """Delete vlan.
 
@@ -83,7 +99,7 @@ class AddRemoveVlanActions(object):
         :return:
         """
         output = ""
-        if len(self.get_vlan_ports(vlan_name)) == 0:
+        if not self.is_vlan_used(vlan_name):
             output = CommandTemplateExecutor(
                 self._cli_service, command_template.DELETE_VLAN
             ).execute_command(vlan_name=vlan_name)
@@ -169,9 +185,13 @@ class AddRemoveVlanActions(object):
         :return:
         """
         vlan_dict = {}
-        out = CommandTemplateExecutor(
-            self._cli_service, command_template.SHOW_VLANS
-        ).execute_command()
+        try:
+            out = CommandTemplateExecutor(
+                self._cli_service, command_template.SHOW_VLANS
+            ).execute_command()
+        except CommandExecutionException:
+            raise Exception("Device doesn't support VLAN configuration")
+
         pattern = r"(?P<vlan_name>.+)\s+{\s+vlan-(id|range)\s+(?P<vlan_id>\d+(-\d+)?);"
         iterator = re.finditer(pattern, out, flags=re.MULTILINE | re.IGNORECASE)
         for match in iterator:
