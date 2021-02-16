@@ -119,10 +119,10 @@ class JunosSnmpAutoload(object):
         types = self._snmp_service.walk(
             SnmpMibObject(MIBS.JUNIPER_MIB, "jnxContentsType")
         )
-        # {'1': ['1.0.0.0'], '2': ['2.1.0.0', '2.2.0.0']}
+        # e.g. {'1': ['1.0.0.0'], '2': ['2.1.0.0', '2.2.0.0']}
         content_indexes = defaultdict(list)
         for element in types:
-            content_indexes[element.index.split('.', 1)[0]].append(element.index)
+            content_indexes[element.index.split(".", 1)[0]].append(element.index)
         return content_indexes
 
     @property
