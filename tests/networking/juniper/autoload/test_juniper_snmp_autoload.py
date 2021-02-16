@@ -96,31 +96,34 @@ class TestJunosSnmpAutoload(TestCase):
         mib_obj_val = Mock()
         snmp_mib_obj.return_value = mib_obj_val
         instance = self._create_instance()
-        index1 = 1
-        index2 = 2
-        index3 = 7
-        index4 = 8
-        value1 = Mock()
-        value2 = Mock()
-        value3 = Mock()
-        value4 = Mock()
-        value5 = Mock()
+        index1 = "1"
+        index2 = "2"
+        index3 = "7"
+        index4 = "8"
+        value1_1 = "1.0.0.0"
+        value2_1 = "2.1.0.0"
+        value3_1 = "7.1.0.0"
+        value4_1 = "8.1.1.0"
+        value4_2 = "8.1.2.0"
         container_indexes = [
-            Mock(safe_value=index1, index=value1),
-            Mock(safe_value=index2, index=value2),
-            Mock(safe_value=index3, index=value3),
-            Mock(safe_value=index4, index=value4),
-            Mock(safe_value=index4, index=value5),
+            Mock(index=value1_1),
+            Mock(index=value2_1),
+            Mock(index=value3_1),
+            Mock(index=value4_1),
+            Mock(index=value4_2),
         ]
         self._snmp_service.walk.return_value = container_indexes
         self.assertEqual(
             instance._content_indexes,
-            {1: [value1], index2: [value2], index3: [value3], index4: [value4, value5]},
+            {
+                index1: [value1_1],
+                index2: [value2_1],
+                index3: [value3_1],
+                index4: [value4_1, value4_2],
+            },
         )
         self._snmp_service.walk.assert_called_once_with(mib_obj_val)
-        snmp_mib_obj.assert_called_once_with(
-            MIBS.JUNIPER_MIB, "jnxContentsContainerIndex"
-        )
+        snmp_mib_obj.assert_called_once_with(MIBS.JUNIPER_MIB, "jnxContentsType")
 
     @patch(
         "cloudshell.networking.juniper.autoload.junos_snmp_autoload." "SnmpMibObject"
