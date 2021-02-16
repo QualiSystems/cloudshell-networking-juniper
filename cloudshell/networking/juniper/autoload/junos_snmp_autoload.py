@@ -114,12 +114,15 @@ class JunosSnmpAutoload(object):
     @property
     @lru_cache()
     def _content_indexes(self):
-        container_indexes = self._snmp_service.walk(
-            SnmpMibObject(MIBS.JUNIPER_MIB, "jnxContentsContainerIndex")
+        # there was a problem with "jnxContentsContainerIndex" - it doesn't have an
+        # index for the chassis, so we parse a container index from element indexes
+        types = self._snmp_service.walk(
+            SnmpMibObject(MIBS.JUNIPER_MIB, "jnxContentsType")
         )
+        # {'1': ['1.0.0.0'], '2': ['2.1.0.0', '2.2.0.0']}
         content_indexes = defaultdict(list)
-        for element in container_indexes:
-            content_indexes[element.safe_value].append(element.index)
+        for element in types:
+            content_indexes[element.index.split('.', 1)[0]].append(element.index)
         return content_indexes
 
     @property
