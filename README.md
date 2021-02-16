@@ -1,6 +1,6 @@
 [![Build status](https://github.com/QualiSystems/cloudshell-networking-juniper/workflows/CI/badge.svg?branch=master)](https://github.com/QualiSystems/cloudshell-networking-juniper/actions?query=branch%3Amaster)
 [![codecov](https://codecov.io/gh/QualiSystems/cloudshell-networking-juniper/branch/master/graph/badge.svg)](https://codecov.io/gh/QualiSystems/cloudshell-networking-juniper)
-[![PyPI version](https://badge.fury.io/py/cloudshell-networking-juniper.svg)](https://badge.fury.io/py/cloudshell-networking-juniper)
+[![PyPI version](https://shields.io/pypi/v/cloudshell-networking-juniper)](https://pypi.org/project/cloudshell-networking-juniper)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
 
