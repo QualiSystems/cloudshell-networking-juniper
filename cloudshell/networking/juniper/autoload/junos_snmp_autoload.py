@@ -340,7 +340,9 @@ class JunosSnmpAutoload(object):
         """
         self._logger.debug("Building Sub Modules")
 
-        element_indexes = ["8", "20"]
+        # 8 - PIC type, 20 - MIC type
+        # first of all use PIC sub-modules, then MIC
+        element_indexes = ["20", "8"]
         sub_module_table = {}
         for index in self._get_submodule_ids(element_indexes):
             index1, index2, index3, index4 = index.split(".")[:4]
