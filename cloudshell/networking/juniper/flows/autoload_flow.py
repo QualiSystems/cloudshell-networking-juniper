@@ -93,5 +93,5 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
             snmp_autoload.build_ports(
                 resource_model, chassis_table, module_table, sub_module_table
             )
-            autoload_details = resource_model.build()
+            autoload_details = resource_model.build(filter_empty_modules=True)
         return autoload_details

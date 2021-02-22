@@ -4,3 +4,4 @@ cloudshell-cli>=4.0,<5
 cloudshell-snmp>=4.0,<5
 functools32; python_version <= '2.7'
 xmltodict~=0.12
+cloudshell-shell-standards~=1.2
