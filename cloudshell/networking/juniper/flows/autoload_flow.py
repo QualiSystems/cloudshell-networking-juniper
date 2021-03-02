@@ -72,10 +72,7 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
         """Autoload Flow.
 
         :param supported_os:
-        :param resource_model:
-        :type resource_model: cloudshell.shell.standards.networking.autoload_model.
-        NetworkingResourceModel|cloudshell.shell.standards.firewall.autoload_model.
-        FirewallResourceModel
+        :param cloudshell.shell.standards.networking.autoload_model.NetworkingResourceModel|cloudshell.shell.standards.firewall.autoload_model.FirewallResourceModel resource_model:  # noqa: E501
         :return:
         """
         with self._snmp_configurator.get_service() as snmp_service:
@@ -93,5 +90,7 @@ class JunOSAutoloadFlow(AbstractAutoloadFlow):
             snmp_autoload.build_ports(
                 resource_model, chassis_table, module_table, sub_module_table
             )
-            autoload_details = resource_model.build(filter_empty_modules=True)
+            autoload_details = resource_model.build(
+                filter_empty_modules=True, use_new_unique_id=True
+            )
         return autoload_details
