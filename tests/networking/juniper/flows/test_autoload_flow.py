@@ -17,12 +17,11 @@ class TestAutoloadFlow(TestCase):
     def test_autoload_flow(self):
         resource_model = MagicMock()
         with patch(
-            "cloudshell.networking.juniper.flows.autoload_flow."
-            "JunosSnmpAutoload"
+            "cloudshell.networking.juniper.flows.autoload_flow." "JunosSnmpAutoload"
         ) as autoload_class_mock:
             autoload_mock = autoload_class_mock()
-            autoload_mock.device_info = 'Junos'
-            self._autoload_flow._autoload_flow(['Junos'], resource_model)
+            autoload_mock.device_info = "Junos"
+            self._autoload_flow._autoload_flow(["Junos"], resource_model)
 
             autoload_mock.build_root.assert_called_once_with(resource_model)
             autoload_mock.build_chassis.assert_called_once_with(resource_model)
@@ -46,10 +45,9 @@ class TestAutoloadFlow(TestCase):
     def test_autoload_flow_not_supported_version(self):
         resource_model = MagicMock()
         with patch(
-                "cloudshell.networking.juniper.flows.autoload_flow."
-                "JunosSnmpAutoload"
+            "cloudshell.networking.juniper.flows.autoload_flow." "JunosSnmpAutoload"
         ) as autoload_class_mock:
             autoload_mock = autoload_class_mock()
-            autoload_mock.device_info = 'Another'
-            with self.assertRaisesRegex(Exception, 'Unsupported device OS'):
-                self._autoload_flow._autoload_flow(['Junos'], resource_model)
+            autoload_mock.device_info = "Another"
+            with self.assertRaisesRegexp(Exception, "Unsupported device OS"):
+                self._autoload_flow._autoload_flow(["Junos"], resource_model)
