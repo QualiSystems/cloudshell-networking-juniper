@@ -3,9 +3,9 @@ from unittest import TestCase
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
 try:
-    from unittest.mock import Mock, patch, create_autospec
+    from unittest.mock import Mock, create_autospec, patch
 except ImportError:
-    from mock import Mock, patch, create_autospec
+    from mock import Mock, create_autospec, patch
 
 
 class TestSystemActions(TestCase):
