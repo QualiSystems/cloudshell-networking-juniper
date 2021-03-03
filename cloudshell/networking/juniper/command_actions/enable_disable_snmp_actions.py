@@ -54,15 +54,12 @@ class EnableDisableSnmpActions(object):
             ).execute_command(snmp_community=snmp_community)
         return output
 
-    def disable_snmp(self, snmp_community):
-        """Disable SNMP.
-
-        :return:
-        """
-        output = CommandTemplateExecutor(
+    def remove_snmp_community(self, snmp_community):
+        return CommandTemplateExecutor(
             self._cli_service, command_template.DISABLE_SNMP
         ).execute_command(snmp_community=snmp_community)
-        output += CommandTemplateExecutor(
+
+    def remove_snmp_view(self):
+        return CommandTemplateExecutor(
             self._cli_service, command_template.DELETE_VIEW
         ).execute_command()
-        return output
