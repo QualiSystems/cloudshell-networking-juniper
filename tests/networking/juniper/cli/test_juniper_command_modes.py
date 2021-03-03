@@ -9,9 +9,9 @@ from cloudshell.networking.juniper.cli.juniper_command_modes import (
 )
 
 try:
-    from unittest.mock import Mock, patch, call
+    from unittest.mock import Mock, call, patch
 except ImportError:
-    from mock import Mock, patch, call
+    from mock import Mock, call, patch
 
 
 class TestJuniperDefaultCommandMode(TestCase):
