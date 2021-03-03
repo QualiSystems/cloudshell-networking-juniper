@@ -135,19 +135,32 @@ class TestEnableDisableSnmpActions(TestCase):
         "cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions."
         "CommandTemplateExecutor"
     )
-    def test_disable_snmp(self, command_template_executor, command_template):
+    def test_remove_snmp_community(self, command_template_executor, command_template):
         snmp_community = Mock()
         execute_command = Mock()
-        command_template_executor.side_effect = [execute_command, execute_command]
+        command_template_executor.side_effect = [execute_command]
         ret1 = "call1"
-        ret2 = "call2"
-        execute_command.execute_command.side_effect = [ret1, ret2]
-        self.assertEqual(self._instance.disable_snmp(snmp_community), ret1 + ret2)
-        command_template_executor_calls = [
-            call(self._cli_service, command_template.DISABLE_SNMP),
-            call(self._cli_service, command_template.DELETE_VIEW),
-        ]
-        command_template_executor.assert_has_calls(command_template_executor_calls)
-        execute_command.execute_command.assert_has_calls(
-            [call(snmp_community=snmp_community), call()]
+        execute_command.execute_command.side_effect = [ret1]
+        self.assertEqual(self._instance.remove_snmp_community(snmp_community), ret1)
+        command_template_executor.assert_called_once_with(
+            self._cli_service, command_template.DISABLE_SNMP
         )
+        execute_command.execute_command.assert_called_once_with(
+            snmp_community=snmp_community
+        )
+
+    @patch(
+        "cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions."
+        "command_template"
+    )
+    @patch(
+        "cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions."
+        "CommandTemplateExecutor"
+    )
+    def test_remove_snmp_view(self, command_template_executor, command_template):
+        self._instance.remove_snmp_view()
+
+        command_template_executor.assert_called_once_with(
+            self._cli_service, command_template.DELETE_VIEW
+        )
+        command_template_executor().execute_command.assert_called_once_with()
