@@ -16,7 +16,6 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
     def __init__(self, cli_configurator, logger):
         """Enable Disable snmp flow.
 
-        :param cloudshell.shell.standards.resource_config_generic_models.GenericSnmpConfig resource_config:  # noqa
         :param cloudshell.networking.juniper.cli.juniper_cli_configurator.JuniperCliConfigurator cli_configurator:  # noqa
         :param logging.Logger logger:
         :return:
@@ -97,7 +96,7 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
         """Disable SNMPv1,2.
 
         :param cloudshell.cli.service.cli_service.CliService cli_service:
-        :param cloudshell.snmp.snmp_parameters.SNMPV1Parameters snmp_parameters:
+        :param cloudshell.snmp.snmp_parameters.SNMPReadParameters|cloudshell.snmp.snmp_parameters.SNMPWriteParameters snmp_parameters:  # noqa: E501
         """
         snmp_community = snmp_parameters.snmp_community
         if not snmp_community:
@@ -106,12 +105,18 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         try:
             self._logger.debug("Disable SNMP")
-            snmp_actions.disable_snmp(snmp_community)
+            snmp_actions.remove_snmp_community(snmp_community)
             commit_rollback.commit()
         except CommandExecutionException:
             commit_rollback.rollback()
-            self._logger.exception("Failed to disable SNMP")
+            self._logger.exception("Failed to remove SNMP community")
             raise
+        try:
+            snmp_actions.remove_snmp_view()
+            commit_rollback.commit()
+        except CommandExecutionException:
+            # SNMPSHELLVIEW uses by other communities
+            commit_rollback.rollback()
 
     def _disable_snmp_v3(self, cli_service, snmp_parameters):
         """Disable SNMPv3.
