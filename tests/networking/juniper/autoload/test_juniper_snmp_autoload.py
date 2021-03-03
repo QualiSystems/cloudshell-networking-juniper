@@ -5,9 +5,9 @@ from cloudshell.networking.juniper.autoload.junos_snmp_autoload import JunosSnmp
 from cloudshell.networking.juniper.autoload.mib_names import MIBS
 
 try:
-    from unittest.mock import Mock, PropertyMock, patch, call
+    from unittest.mock import Mock, PropertyMock, call, patch
 except ImportError:
-    from mock import Mock, PropertyMock, patch, call
+    from mock import Mock, PropertyMock, call, patch
 
 
 class TestJunosSnmpAutoload(TestCase):

@@ -5,9 +5,9 @@ from cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions i
 )
 
 try:
-    from unittest.mock import Mock, patch, call
+    from unittest.mock import Mock, call, patch
 except ImportError:
-    from mock import Mock, patch, call
+    from mock import Mock, call, patch
 
 
 class ContextManagerMock(object):
