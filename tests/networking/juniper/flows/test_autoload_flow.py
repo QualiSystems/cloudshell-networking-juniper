@@ -38,9 +38,7 @@ class TestAutoloadFlow(TestCase):
             autoload_mock.build_ports.assert_called_once_with(
                 resource_model, chassis_table, module_table, sub_module_table
             )
-            resource_model.build.assert_called_once_with(
-                filter_empty_modules=True, use_new_unique_id=True
-            )
+            resource_model.build.assert_called_once_with(filter_empty_modules=True)
 
     def test_autoload_flow_not_supported_version(self):
         resource_model = MagicMock()
