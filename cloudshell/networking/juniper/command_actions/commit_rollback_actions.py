@@ -20,9 +20,9 @@ class CommitRollbackActions(object):
         self._cli_service = cli_service
         self._logger = logger
 
-    def commit(self):
+    def commit(self, timeout=None):
         output = CommandTemplateExecutor(
-            self._cli_service, command_template.COMMIT
+            self._cli_service, command_template.COMMIT, timeout=timeout
         ).execute_command()
         return output
 
