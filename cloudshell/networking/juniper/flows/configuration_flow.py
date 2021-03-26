@@ -96,7 +96,8 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
                 restore_actions.restore_running(
                     restore_type, get_url_without_password(path), get_url_password(path)
                 )
-                commit_rollback_actions.commit()
+                # wait longer for applying changes
+                commit_rollback_actions.commit(timeout=120)
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
                 raise

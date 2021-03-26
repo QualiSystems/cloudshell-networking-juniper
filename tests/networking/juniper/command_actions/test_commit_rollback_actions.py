@@ -35,7 +35,7 @@ class TestCommitRollbackActions(TestCase):
         execute_command.execute_command.return_value = output
         self.assertIs(self._instance.commit(), output)
         command_template_executor.assert_called_once_with(
-            self._cli_service, command_template.COMMIT
+            self._cli_service, command_template.COMMIT, timeout=None
         )
         execute_command.execute_command.assert_called_once_with()
 
