@@ -62,7 +62,7 @@ class JuniperConnectivity(AbstractConnectivityFlow):
 
                 vlan_actions.clean_port(port)
                 vlan_actions.assign_member(port, vlan_range, port_mode)
-                commit_rollback_actions.commit()
+                commit_rollback_actions.commit(timeout=120)
                 return "Success"
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
