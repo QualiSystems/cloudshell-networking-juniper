@@ -128,12 +128,10 @@ class JunosSnmpAutoload(object):
     @property
     @lru_cache()
     def _if_indexes(self):
-        return map(
-            lambda x: int(x.index),
-            self._snmp_service.walk(
-                SnmpMibObject(MIBS.JUNIPER_IF_MIB, "ifChassisPort")
-            ),
-        )
+        for x in self._snmp_service.walk(
+            SnmpMibObject(MIBS.JUNIPER_IF_MIB, "ifChassisPort")
+        ):
+            yield int(x.index)
 
     def build_root(self, resource_model):
         """Collect device root attributes.
