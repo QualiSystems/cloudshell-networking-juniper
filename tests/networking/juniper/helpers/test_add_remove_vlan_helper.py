@@ -91,7 +91,8 @@ class TestVlanRangeOperations(TestCase):
 
 
 class TestGetInterfacesWithVlanId(TestCase):
-    COMMAND_OUTPUT = """<rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
+    COMMAND_OUTPUT = """
+    <rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
         <configuration junos:changed-seconds="0" junos:changed-localtime="0">
                 <interfaces>
                     <interface>
@@ -162,7 +163,8 @@ class TestGetInterfacesWithVlanId(TestCase):
         self.assertFalse(is_vlan_used("8-9", self.COMMAND_OUTPUT))
 
     def test_without_vlans(self):
-        command_output = """<rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
+        command_output = """
+        <rpc-reply xmlns:junos="http://xml.juniper.net/junos/17.3R2/junos">
             <configuration junos:changed-seconds="0" junos:changed-localtime="0">
                     <interfaces>
                         <interface>
