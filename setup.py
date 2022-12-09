@@ -21,5 +21,7 @@ setup(
     tests_require=required_for_tests,
     version=version_from_file,
     description="QualiSystems Juniper package",
+    long_description="Juniper Shell operations",
+    long_description_content_type="text/x-rst",
     include_package_data=True,
 )
