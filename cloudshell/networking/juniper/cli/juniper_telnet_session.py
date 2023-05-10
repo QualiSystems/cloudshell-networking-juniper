@@ -1,10 +1,15 @@
+from __future__ import annotations
 from collections import OrderedDict
+from typing import TYPE_CHECKING
 
 from cloudshell.cli.session.telnet_session import TelnetSession
 
+if TYPE_CHECKING:
+    from logging import Logger
+
 
 class JuniperTelnetSession(TelnetSession):
-    def _connect_actions(self, prompt, logger):
+    def _connect_actions(self, prompt: str, logger: Logger)-> None:
         action_map = OrderedDict()
         action_map[
             "[Ll]ogin:|[Uu]ser:|[Uu]sername:"
@@ -15,7 +20,7 @@ class JuniperTelnetSession(TelnetSession):
 
         cli_action_key = r"[%>#]{1}\s*$"
 
-        def action(session, sess_logger):
+        def action(session: JuniperTelnetSession, sess_logger: Logger)->None:
             session.send_line("cli", sess_logger)
             del action_map[cli_action_key]
 

@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import cloudshell.networking.juniper.autoload.junos_snmp_autoload as junos_snmp_autoload
 from cloudshell.networking.juniper.autoload.junos_snmp_autoload import JunosSnmpAutoload
-from cloudshell.networking.juniper.autoload.mib_names import MIBS
+from cloudshell.networking.juniper.autoload.snmp_tables.mib_names import MIBS
 
 try:
     from unittest.mock import Mock, PropertyMock, call, patch

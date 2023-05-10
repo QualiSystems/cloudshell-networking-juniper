@@ -3,7 +3,7 @@ import sys
 
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
-from cloudshell.networking.juniper.autoload.mib_names import MIBS
+from cloudshell.networking.juniper.autoload.snmp_tables.mib_names import MIBS
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import (
     AddRemoveVlanHelper,
 )
