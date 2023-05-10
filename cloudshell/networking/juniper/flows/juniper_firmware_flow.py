@@ -1,16 +1,27 @@
+from __future__ import annotations
 import time
+from typing import TYPE_CHECKING
 
+from cloudshell.cli.service.cli_service import CliService
 from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
+if TYPE_CHECKING:
+    from typing import Union
+    from logging import Logger
+    from cloudshell.shell.standards.networking.resource_config import NetworkingResourceConfig
+    from ..cli.juniper_cli_configurator import JuniperCliConfigurator
+    from cloudshell.shell.flows.utils.url import RemoteURL, BasicLocalUrl
+    Url = Union[RemoteURL, BasicLocalUrl]
+
 
 class JuniperFirmwareFlow(AbstractFirmwareFlow):
-    def __init__(self, logger, cli_configurator):
-        super(JuniperFirmwareFlow, self).__init__(logger)
+    def __init__(self,logger: Logger, resource_config: NetworkingResourceConfig, cli_configurator: JuniperCliConfigurator):
+        super(JuniperFirmwareFlow, self).__init__(logger, resource_config)
         self.cli_configurator = cli_configurator
 
-    def _load_firmware_flow(self, path, vrf_management_name, timeout):
+    def _load_firmware_flow(self, firmware_url: Url, vrf_management_name: str | None, timeout: int,)->None:
         """Load firmware.
 
         Update firmware version on device by loading provided
@@ -22,17 +33,11 @@ class JuniperFirmwareFlow(AbstractFirmwareFlow):
 
         :param path: full path to firmware file on ftp/tftp location
         :param vrf_management_name: VRF Name
-        :return: status / exception
         """
         self._logger.info("Upgrading firmware")
-
-        if not path:
-            raise Exception(
-                self.__class__.__name__, "Firmware file path cannot be empty"
-            )
         with self.cli_configurator.enable_mode_service() as cli_service:
             system_actions = SystemActions(cli_service, self._logger)
-            system_actions.load_firmware(path, timeout=timeout)
+            system_actions.load_firmware(str(firmware_url), timeout=timeout)
             waiting_time = 0
             try:
                 system_actions.reboot(20)
@@ -43,7 +48,7 @@ class JuniperFirmwareFlow(AbstractFirmwareFlow):
             self._logger.debug("Waiting session up")
             cli_service.reconnect(timeout - waiting_time)
 
-    def _wait_session_disconnect(self, cli_service, timeout):
+    def _wait_session_disconnect(self, cli_service: CliService, timeout: int):
         reboot_time = time.time()
         while True:
             rest_time = time.time() - reboot_time

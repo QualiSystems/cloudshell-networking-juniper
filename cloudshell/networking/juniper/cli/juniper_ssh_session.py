@@ -1,14 +1,19 @@
+from __future__ import annotations
 from collections import OrderedDict
+from typing import TYPE_CHECKING
 
 from cloudshell.cli.session.ssh_session import SSHSession
 
+if TYPE_CHECKING:
+    from logging import Logger
+
 
 class JuniperSSHSession(SSHSession):
-    def _connect_actions(self, prompt, logger):
+    def _connect_actions(self, prompt: str, logger: Logger)->None:
         action_map = OrderedDict()
         cli_action_key = r"[%>#]{1}\s*$"
 
-        def action(session, sess_logger):
+        def action(session: JuniperSSHSession, sess_logger: Logger)->None:
             session.send_line("cli", sess_logger)
             del action_map[cli_action_key]
 

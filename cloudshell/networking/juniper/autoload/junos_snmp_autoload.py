@@ -2,18 +2,14 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import sys
 from collections import defaultdict
 
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
 from cloudshell.networking.juniper.autoload.entities import JuniperGenericPort
-from cloudshell.networking.juniper.autoload.mib_names import MIBS
+from cloudshell.networking.juniper.autoload.snmp_tables.mib_names import MIBS
 
-if sys.version_info >= (3, 0):
-    from functools import lru_cache
-else:
-    from functools32 import lru_cache
+from functools import lru_cache
 
 
 class JunosSnmpAutoload(object):
@@ -580,3 +576,17 @@ class JunosSnmpAutoload(object):
                     parent.connect_port(port)
                     port_table[generic_port.index] = port
         return port_table
+
+    def discover(self, resource_model):
+        self.build_root(resource_model)
+        chassis_table = self.build_chassis(resource_model)
+        self.build_power_modules(resource_model, chassis_table)
+        module_table = self.build_modules(resource_model, chassis_table)
+        sub_module_table = self.build_sub_modules(
+            resource_model, module_table
+        )
+        self.build_ports(
+            resource_model, chassis_table, module_table, sub_module_table
+        )
+        autoload_details = resource_model.build(filter_empty_modules=True)
+        return autoload_details
