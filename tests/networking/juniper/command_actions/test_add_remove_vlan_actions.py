@@ -1,13 +1,9 @@
 from unittest import TestCase
+from unittest.mock import Mock, patch
 
 from cloudshell.networking.juniper.command_actions.add_remove_vlan_actions import (
     AddRemoveVlanActions,
 )
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
 
 
 class TestAddRemoveVlanActions(TestCase):

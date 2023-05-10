@@ -1,4 +1,5 @@
 from unittest import TestCase
+from unittest.mock import Mock, patch
 
 from cloudshell.networking.juniper.cli.juniper_cli_configurator import (
     JuniperCliConfigurator,
@@ -7,11 +8,6 @@ from cloudshell.networking.juniper.cli.juniper_command_modes import (
     ConfigCommandMode,
     DefaultCommandMode,
 )
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
 
 
 class TestJuniperCliConfigurator(TestCase):

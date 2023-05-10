@@ -1,11 +1,7 @@
 from unittest import TestCase
+from unittest.mock import Mock, patch
 
 from cloudshell.networking.juniper.cli.juniper_ssh_session import JuniperSSHSession
-
-try:
-    from unittest.mock import Mock, patch
-except ImportError:
-    from mock import Mock, patch
 
 
 class TestJuniperSSHSession(TestCase):

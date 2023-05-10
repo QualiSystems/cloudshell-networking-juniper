@@ -1,11 +1,7 @@
 from unittest import TestCase
+from unittest.mock import MagicMock, patch
 
 from cloudshell.networking.juniper.flows.autoload_flow import JunOSAutoloadFlow
-
-try:
-    from unittest.mock import MagicMock, patch
-except ImportError:
-    from mock import MagicMock, patch
 
 
 class TestAutoloadFlow(TestCase):
@@ -47,5 +43,5 @@ class TestAutoloadFlow(TestCase):
         ) as autoload_class_mock:
             autoload_mock = autoload_class_mock()
             autoload_mock.device_info = "Another"
-            with self.assertRaisesRegexp(Exception, "Unsupported device OS"):
+            with self.assertRaisesRegex(Exception, "Unsupported device OS"):
                 self._autoload_flow._autoload_flow(["Junos"], resource_model)

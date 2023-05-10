@@ -1,16 +1,12 @@
 from unittest import TestCase
+from unittest.mock import Mock, call, patch
 
 from cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions import (
     EnableDisableSnmpActions,
 )
 
-try:
-    from unittest.mock import Mock, call, patch
-except ImportError:
-    from mock import Mock, call, patch
 
-
-class ContextManagerMock(object):
+class ContextManagerMock:
     def __init__(self, session):
         self._session = session
 

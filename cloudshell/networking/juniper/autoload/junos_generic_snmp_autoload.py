@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import os
 import re
 from functools import lru_cache
@@ -15,18 +16,20 @@ if TYPE_CHECKING:
 
 
 class JunOSPortsSnmpTable(SnmpPortsTable):
-
     @property
     @lru_cache()
-    def port_table(self)->QualiMibTable:
+    def port_table(self) -> QualiMibTable:
         """Load all juniper required snmp tables."""
         if_table = super().port_table
-        junos_if_table: QualiMibTable = self._snmp.get_multiple_columns(MIB_TABLES.JUNOS_IF_TABLE)
+        junos_if_table: QualiMibTable = self._snmp.get_multiple_columns(
+            MIB_TABLES.JUNOS_IF_TABLE
+        )
         table = QualiMibTable("Interfaces")
         for index, j_data in junos_if_table.items():
             data = if_table.get(index, {})
-            table[index]={**data, **j_data}
+            table[index] = {**data, **j_data}
         return table
+
 
 class JunOSPortsTable(PortsTable):
     PORT_TYPE_EXCLUDE_LIST = [
@@ -36,20 +39,20 @@ class JunOSPortsTable(PortsTable):
         "mplsTunnel",
         "softwareLoopback",
     ]
-    PORT_EXCLUDE_LIST = PortsTable.PORT_EXCLUDE_LIST+[
-            "bme",
-            "vme",
-            "me",
-            "vlan",
-            "gr",
-            "vt",
-            "mt",
-            "mams",
-            "irb",
-            "lsi",
-            "tap",
-            "fxp",
-        ]
+    PORT_EXCLUDE_LIST = PortsTable.PORT_EXCLUDE_LIST + [
+        "bme",
+        "vme",
+        "me",
+        "vlan",
+        "gr",
+        "vt",
+        "mt",
+        "mams",
+        "irb",
+        "lsi",
+        "tap",
+        "fxp",
+    ]
 
     @property
     @lru_cache()
@@ -58,13 +61,21 @@ class JunOSPortsTable(PortsTable):
         return re.compile(type_exclude, re.IGNORECASE)
 
     def _is_valid_port(self, port: SnmpIfEntity) -> bool:
-        if self.PORT_TYPE_EXCLUDE_LIST and self.port_type_exclude_re.search(port.if_type) is not None:
+        if (
+            self.PORT_TYPE_EXCLUDE_LIST
+            and self.port_type_exclude_re.search(port.if_type) is not None
+        ):
             return False
         return super()._is_valid_port(port)
 
 
 class JunOSPhysicalTable(PhysicalTable):
-    def __init__(self, entity_table: SnmpEntityTable, logger: Logger, resource_model: NetworkingResourceModel):
+    def __init__(
+        self,
+        entity_table: SnmpEntityTable,
+        logger: Logger,
+        resource_model: NetworkingResourceModel,
+    ):
         super().__init__(entity_table, logger, resource_model)
 
     @property
@@ -95,7 +106,6 @@ class JunOSGenericSNMPAutoload(GenericSNMPAutoload):
     def _build_chassis(self) -> None:
         super()._build_chassis()
 
-
     @property
     def physical_table_service(self) -> JunOSPhysicalTable:
         if not self._physical_table_service:
@@ -105,4 +115,3 @@ class JunOSGenericSNMPAutoload(GenericSNMPAutoload):
                 resource_model=self._resource_model,
             )
         return self._physical_table_service
-

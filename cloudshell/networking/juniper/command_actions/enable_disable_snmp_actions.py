@@ -7,7 +7,7 @@ from cloudshell.networking.juniper.command_templates import (
 )
 
 
-class EnableDisableSnmpActions(object):
+class EnableDisableSnmpActions:
     def __init__(self, cli_service, logger):
         """Reboot actions.
 

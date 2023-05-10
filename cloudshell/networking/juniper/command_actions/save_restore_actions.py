@@ -7,7 +7,7 @@ from cloudshell.networking.juniper.command_templates import (
 )
 
 
-class SaveRestoreActions(object):
+class SaveRestoreActions:
     def __init__(self, cli_service, logger):
         """Save/restore configuration.
 
