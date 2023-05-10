@@ -1,11 +1,7 @@
 from unittest import TestCase
+from unittest.mock import Mock, PropertyMock, patch
 
 from cloudshell.networking.juniper.autoload.entities import JuniperGenericPort
-
-try:
-    from unittest.mock import Mock, PropertyMock, patch
-except ImportError:
-    from mock import Mock, PropertyMock, patch
 
 
 class TestJuniperGenericPort(TestCase):
@@ -24,7 +20,7 @@ class TestJuniperGenericPort(TestCase):
         self._snmp_service.get_property.return_value = Mock(safe_value=value)
         mib = Mock()
         snmp_attribute = Mock()
-        self.assertEquals(instance._get_snmp_attribute(mib, snmp_attribute), value)
+        self.assertEqual(instance._get_snmp_attribute(mib, snmp_attribute), value)
         snmp_mib_object.assert_called_once_with(mib, snmp_attribute, self._index)
         self._snmp_service.get_property.assert_called_once_with(
             snmp_mib_object.return_value

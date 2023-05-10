@@ -7,7 +7,7 @@ from cloudshell.networking.juniper.command_templates import (
 )
 
 
-class CommitRollbackActions(object):
+class CommitRollbackActions:
     def __init__(self, cli_service, logger):
         """Add remove vlan.
 

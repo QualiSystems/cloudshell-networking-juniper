@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from cloudshell.cli.session.session_exceptions import CommandExecutionException
@@ -15,10 +16,16 @@ from cloudshell.networking.juniper.command_actions.enable_disable_snmp_v3_action
 )
 
 if TYPE_CHECKING:
-    from typing import Union
     from logging import Logger
+    from typing import Union
+
     from cloudshell.cli.service.cli_service import CliService
-    from cloudshell.snmp.snmp_parameters import SNMPReadParameters, SNMPWriteParameters, SNMPV3Parameters
+    from cloudshell.snmp.snmp_parameters import (
+        SNMPReadParameters,
+        SNMPV3Parameters,
+        SNMPWriteParameters,
+    )
+
     from ..cli.juniper_cli_configurator import JuniperCliConfigurator
 
     SnmpParams = Union[SNMPReadParameters, SNMPWriteParameters, SNMPV3Parameters]
@@ -37,7 +44,9 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
             else:
                 self._enable_snmp(cli_service, snmp_parameters)
 
-    def _enable_snmp(self, cli_service: CliService, snmp_parameters: SnmpParams)-> None:
+    def _enable_snmp(
+        self, cli_service: CliService, snmp_parameters: SnmpParams
+    ) -> None:
         """Enable SNMPv1,2.
 
         :param cloudshell.cli.service.cli_service.CliService cli_service:
@@ -49,9 +58,7 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
         snmp_actions = EnableDisableSnmpActions(cli_service, self._logger)
         commit_rollback = CommitRollbackActions(cli_service, self._logger)
         if not snmp_actions.configured(snmp_community):
-            self._logger.debug(
-                "Configuring SNMP with community {}".format(snmp_community)
-            )
+            self._logger.debug(f"Configuring SNMP with community {snmp_community}")
             try:
                 snmp_actions.enable_snmp(
                     snmp_community, write=snmp_parameters.is_read_only is False
@@ -62,7 +69,9 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
                 self._logger.exception("Failed to enable SNMP")
                 raise
 
-    def _enable_snmp_v3(self, cli_service: CliService, snmp_parameters: SnmpParams)->None:
+    def _enable_snmp_v3(
+        self, cli_service: CliService, snmp_parameters: SnmpParams
+    ) -> None:
         """Enable SNMPv3.
 
         :param cloudshell.cli.service.cli_service.CliService cli_service:
@@ -90,14 +99,16 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
             self._logger.exception("Failed to enable SNMPv3")
             raise
 
-    def disable_snmp(self, snmp_parameters: SnmpParams)->None:
+    def disable_snmp(self, snmp_parameters: SnmpParams) -> None:
         with self._cli_configurator.config_mode_service() as cli_service:
             if snmp_parameters.version == snmp_parameters.SnmpVersion.V3:
                 self._disable_snmp_v3(cli_service, snmp_parameters)
             else:
                 self._disable_snmp(cli_service, snmp_parameters)
 
-    def _disable_snmp(self, cli_service: CliService, snmp_parameters: SnmpParams)-> None:
+    def _disable_snmp(
+        self, cli_service: CliService, snmp_parameters: SnmpParams
+    ) -> None:
         """Disable SNMPv1,2.
 
         :param cloudshell.cli.service.cli_service.CliService cli_service:
@@ -123,7 +134,9 @@ class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
             # SNMPSHELLVIEW uses by other communities
             commit_rollback.rollback()
 
-    def _disable_snmp_v3(self, cli_service: CliService, snmp_parameters: SnmpParams)->None:
+    def _disable_snmp_v3(
+        self, cli_service: CliService, snmp_parameters: SnmpParams
+    ) -> None:
         """Disable SNMPv3.
 
         :param cloudshell.cli.service.cli_service.CliService cli_service:

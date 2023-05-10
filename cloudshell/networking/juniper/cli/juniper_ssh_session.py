@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from collections import OrderedDict
 from typing import TYPE_CHECKING
 
@@ -9,11 +10,11 @@ if TYPE_CHECKING:
 
 
 class JuniperSSHSession(SSHSession):
-    def _connect_actions(self, prompt: str, logger: Logger)->None:
+    def _connect_actions(self, prompt: str, logger: Logger) -> None:
         action_map = OrderedDict()
         cli_action_key = r"[%>#]{1}\s*$"
 
-        def action(session: JuniperSSHSession, sess_logger: Logger)->None:
+        def action(session: JuniperSSHSession, sess_logger: Logger) -> None:
             session.send_line("cli", sess_logger)
             del action_map[cli_action_key]
 

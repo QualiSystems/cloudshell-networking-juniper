@@ -1,5 +1,5 @@
 import re
-import sys
+from functools import lru_cache
 
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
@@ -8,13 +8,8 @@ from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import (
     AddRemoveVlanHelper,
 )
 
-if sys.version_info >= (3, 0):
-    from functools import lru_cache
-else:
-    from functools32 import lru_cache
 
-
-class JuniperGenericPort(object):
+class JuniperGenericPort:
     """Collect information and build Port or PortChannel."""
 
     PORTCHANNEL_NAME_PATTERN = re.compile(r"ae(\d+)", re.IGNORECASE)

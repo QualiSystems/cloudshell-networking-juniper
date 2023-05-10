@@ -11,7 +11,7 @@ from cloudshell.networking.juniper.command_templates import (
 from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import is_vlan_used
 
 
-class AddRemoveVlanActions(object):
+class AddRemoveVlanActions:
     def __init__(self, cli_service, logger):
         """Add remove vlan.
 
@@ -53,7 +53,7 @@ class AddRemoveVlanActions(object):
         output += CommandTemplateExecutor(
             self._cli_service, command_template.CONFIGURE_VLAN_QNQ
         ).execute_command(vlan_name=vlan_name)
-        self._logger.debug("Set qnq tag for {0}".format(vlan_name))
+        self._logger.debug(f"Set qnq tag for {vlan_name}")
         return output
 
     def create_vlan(self, vlan_name, vlan_range):
@@ -67,14 +67,12 @@ class AddRemoveVlanActions(object):
             output = CommandTemplateExecutor(
                 self._cli_service, command_template.CREATE_VLAN_RANGE
             ).execute_command(vlan_name=vlan_name, vlan_range=vlan_range)
-            self._logger.debug(
-                "Created vlan range {0}, ids {1}".format(vlan_name, vlan_range)
-            )
+            self._logger.debug(f"Created vlan range {vlan_name}, ids {vlan_range}")
         else:
             output = CommandTemplateExecutor(
                 self._cli_service, command_template.CREATE_VLAN
             ).execute_command(vlan_name=vlan_name, vlan_id=vlan_range)
-            self._logger.debug("Created vlan {0}, id {1}".format(vlan_name, vlan_range))
+            self._logger.debug(f"Created vlan {vlan_name}, id {vlan_range}")
         return output
 
     def is_vlan_used(self, vlan_name):
@@ -162,7 +160,7 @@ class AddRemoveVlanActions(object):
                 self._cli_service, command_template.DELETE_PORT_MODE_ON_INTERFACE_ELS
             ).execute_command(port_name=port)
 
-        self._logger.info("Port mode removed for {0}".format(port))
+        self._logger.info(f"Port mode removed for {port}")
         return output
 
     def clean_port(self, port):
@@ -175,9 +173,7 @@ class AddRemoveVlanActions(object):
         for vlan_name in vlans:
             self.delete_member(port, vlan_name)
         self.remove_port_mode_on_interface(port)
-        self._logger.info(
-            "Cleaning port {0}, vlans, {1}".format(port, ", ".join(vlans))
-        )
+        self._logger.info("Cleaning port {}, vlans, {}".format(port, ", ".join(vlans)))
 
     def get_vlans(self):
         """Get vlans info.

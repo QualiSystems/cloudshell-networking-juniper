@@ -1,10 +1,9 @@
 from collections import OrderedDict
 
-import six
 import xmltodict
 
 
-class AddRemoveVlanHelper(object):
+class AddRemoveVlanHelper:
     PORT_NAME_CHAR_REPLACEMENT = OrderedDict([(":", "--"), ("/", "-")])
 
     @staticmethod
@@ -23,7 +22,7 @@ class AddRemoveVlanHelper(object):
                 value,
             ) in AddRemoveVlanHelper.PORT_NAME_CHAR_REPLACEMENT.items():
                 port_location = port_location.replace(value, replacement)
-            port_name = "{0}-{1}".format(port_suffix, port_location)
+            port_name = f"{port_suffix}-{port_location}"
         elif len(port_name_splitted) == 1:
             port_name = port_name_splitted[0]
         else:
@@ -46,7 +45,7 @@ class AddRemoveVlanHelper(object):
         return temp_port_name
 
 
-class VlanRange(object):
+class VlanRange:
     def __init__(self, vlan_range, name=None):
         """Vlan range.
 
@@ -62,7 +61,7 @@ class VlanRange(object):
         if name:
             self.name = name
         else:
-            self.name = "range-{0}-{1}".format(self.first_element, self.last_element)
+            self.name = f"range-{self.first_element}-{self.last_element}"
 
     def intersect(self, other):
         """Check for intersection.
@@ -137,7 +136,7 @@ class VlanRange(object):
 
         :return:
         """
-        return "{0}-{1}".format(self.first_element, self.last_element)
+        return f"{self.first_element}-{self.last_element}"
 
     def has_any_common_members(self, other):
         """Check if VLAN ranges have any common members.
@@ -168,7 +167,7 @@ class VlanRange(object):
         return hash(self.first_element) | hash(self.last_element)
 
 
-class VlanRangeOperations(object):
+class VlanRangeOperations:
     @staticmethod
     def create_from_dict(range_dict):
         """Create list of ranges from dict.
@@ -230,7 +229,7 @@ def is_vlan_used(vlan_range, command_output):
     for interface in interfaces:
         try:
             vlans = interface["unit"]["family"]["ethernet-switching"]["vlan"]["members"]
-            if isinstance(vlans, six.string_types):
+            if isinstance(vlans, str):
                 vlans = [vlans]
         except KeyError:
             continue

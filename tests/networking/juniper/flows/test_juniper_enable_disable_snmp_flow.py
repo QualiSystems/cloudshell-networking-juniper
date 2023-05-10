@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, Mock, call
+
 import pytest
 
 from cloudshell.cli.command_template.command_template_executor import (
@@ -9,11 +11,6 @@ from cloudshell.snmp.snmp_parameters import SNMPReadParameters
 from cloudshell.networking.juniper.flows.juniper_enable_disable_snmp_flow import (
     JuniperEnableDisableSnmpFlow,
 )
-
-try:
-    from unittest.mock import MagicMock, Mock, call
-except ImportError:
-    from mock import MagicMock, Mock, call
 
 
 @pytest.fixture()

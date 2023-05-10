@@ -1,18 +1,16 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 import os
 import re
 from collections import defaultdict
+from functools import lru_cache
 
 from cloudshell.snmp.core.domain.snmp_oid import SnmpMibObject
 
 from cloudshell.networking.juniper.autoload.entities import JuniperGenericPort
 from cloudshell.networking.juniper.autoload.snmp_tables.mib_names import MIBS
 
-from functools import lru_cache
 
-
-class JunosSnmpAutoload(object):
+class JunosSnmpAutoload:
     """Load inventory by snmp and build device elements and attributes."""
 
     FILTER_PORTS_BY_DESCRIPTION = [
@@ -495,7 +493,7 @@ class JunosSnmpAutoload(object):
         rem_sys_descr = self._snmp_service.get_property(
             SnmpMibObject(MIBS.LLDP_MIB, "lldpRemSysDesc", self._lldp_keys[index])
         ).safe_value
-        port.port_adjacent = "{0}, {1}".format(rem_port_descr, rem_sys_descr)
+        port.port_adjacent = f"{rem_port_descr}, {rem_sys_descr}"
 
     def _get_associated_phys_port_by_name(self, physical_generic_ports, description):
         """Associate physical port by description.
@@ -582,11 +580,7 @@ class JunosSnmpAutoload(object):
         chassis_table = self.build_chassis(resource_model)
         self.build_power_modules(resource_model, chassis_table)
         module_table = self.build_modules(resource_model, chassis_table)
-        sub_module_table = self.build_sub_modules(
-            resource_model, module_table
-        )
-        self.build_ports(
-            resource_model, chassis_table, module_table, sub_module_table
-        )
+        sub_module_table = self.build_sub_modules(resource_model, module_table)
+        self.build_ports(resource_model, chassis_table, module_table, sub_module_table)
         autoload_details = resource_model.build(filter_empty_modules=True)
         return autoload_details

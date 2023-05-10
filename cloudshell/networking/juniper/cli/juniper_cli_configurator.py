@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -17,17 +16,20 @@ from cloudshell.networking.juniper.cli.juniper_telnet_session import (
 )
 
 if TYPE_CHECKING:
-    from cloudshell.cli.service.cli import CLI
-    from cloudshell.shell.standards.resource_config_generic_models import GenericCLIConfig
     from logging import Logger
+
+    from cloudshell.cli.service.cli import CLI
     from cloudshell.cli.service.command_mode import CommandMode
+    from cloudshell.shell.standards.resource_config_generic_models import (
+        GenericCLIConfig,
+    )
 
 
 class JuniperCliConfigurator(AbstractModeConfigurator):
     REGISTERED_SESSIONS = (JuniperSSHSession, JuniperTelnetSession)
 
-    def __init__(self, cli:CLI , resource_config: GenericCLIConfig, logger: Logger):
-        super(JuniperCliConfigurator, self).__init__(resource_config, logger, cli)
+    def __init__(self, cli: CLI, resource_config: GenericCLIConfig, logger: Logger):
+        super().__init__(resource_config, logger, cli)
         self.modes = CommandModeHelper.create_command_mode(resource_config)
 
     @property

@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from unittest import TestCase
+from unittest.mock import Mock, call, patch
 
 from cloudshell.cli.service.command_mode import CommandMode
 
@@ -7,11 +8,6 @@ from cloudshell.networking.juniper.cli.juniper_command_modes import (
     ConfigCommandMode,
     DefaultCommandMode,
 )
-
-try:
-    from unittest.mock import Mock, call, patch
-except ImportError:
-    from mock import Mock, call, patch
 
 
 class TestJuniperDefaultCommandMode(TestCase):

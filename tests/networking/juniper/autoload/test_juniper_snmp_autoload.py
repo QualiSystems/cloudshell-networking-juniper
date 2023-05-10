@@ -1,13 +1,9 @@
 from unittest import TestCase
+from unittest.mock import Mock, PropertyMock, call, patch
 
 import cloudshell.networking.juniper.autoload.junos_snmp_autoload as junos_snmp_autoload
 from cloudshell.networking.juniper.autoload.junos_snmp_autoload import JunosSnmpAutoload
 from cloudshell.networking.juniper.autoload.snmp_tables.mib_names import MIBS
-
-try:
-    from unittest.mock import Mock, PropertyMock, call, patch
-except ImportError:
-    from mock import Mock, PropertyMock, call, patch
 
 
 class TestJunosSnmpAutoload(TestCase):
@@ -133,7 +129,7 @@ class TestJunosSnmpAutoload(TestCase):
         index2 = "2"
         self._snmp_service.walk.return_value = [Mock(index=index1), Mock(index=index2)]
         instance = self._create_instance()
-        self.assertEquals(list(instance._if_indexes), [int(index1), int(index2)])
+        self.assertEqual(list(instance._if_indexes), [int(index1), int(index2)])
         snmp_mib_obj.assert_called_once_with(MIBS.JUNIPER_IF_MIB, "ifChassisPort")
         self._snmp_service.walk.assert_called_once_with(snmp_mib_obj.return_value)
 
@@ -152,9 +148,9 @@ class TestJunosSnmpAutoload(TestCase):
         contact_name = Mock()
         system_name = Mock()
         location = Mock()
-        device_info.return_value = "TEst JUNOS {} #/test".format(version)
+        device_info.return_value = f"TEst JUNOS {version} #/test"
         self._snmp_service.get_property.side_effect = [
-            Mock(safe_value="{0}-testjnxProductName{1}".format(vendor, model)),
+            Mock(safe_value=f"{vendor}-testjnxProductName{model}"),
             Mock(safe_value=contact_name),
             Mock(safe_value=system_name),
             Mock(safe_value=location),

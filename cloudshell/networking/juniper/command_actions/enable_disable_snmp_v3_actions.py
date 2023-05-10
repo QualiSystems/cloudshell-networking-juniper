@@ -8,7 +8,7 @@ from cloudshell.networking.juniper.command_templates import (
 )
 
 
-class EnableDisableSnmpV3Actions(object):
+class EnableDisableSnmpV3Actions:
 
     AUTH_COMMAND_TABLE = {
         SNMPV3Parameters.AUTH_NO_AUTH: command_template.SET_AUTH_NONE,
@@ -59,13 +59,13 @@ class EnableDisableSnmpV3Actions(object):
         if not auth_command_template:
             raise Exception(
                 self.__class__.__name__,
-                "Authentication protocol {} is not supported".format(auth_proto),
+                f"Authentication protocol {auth_proto} is not supported",
             )
         priv_command_template = self.PRIV_COMMAND_TABLE.get(priv_proto)
         if not priv_command_template:
             raise Exception(
                 self.__class__.__name__,
-                "Privacy Protocol {} is not supported".format(priv_proto),
+                f"Privacy Protocol {priv_proto} is not supported",
             )
 
         out = CommandTemplateExecutor(

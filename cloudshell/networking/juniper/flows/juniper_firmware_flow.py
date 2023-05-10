@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import time
 from typing import TYPE_CHECKING
 
@@ -8,20 +9,35 @@ from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
 if TYPE_CHECKING:
-    from typing import Union
     from logging import Logger
-    from cloudshell.shell.standards.networking.resource_config import NetworkingResourceConfig
+    from typing import Union
+
+    from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
+    from cloudshell.shell.standards.networking.resource_config import (
+        NetworkingResourceConfig,
+    )
+
     from ..cli.juniper_cli_configurator import JuniperCliConfigurator
-    from cloudshell.shell.flows.utils.url import RemoteURL, BasicLocalUrl
+
     Url = Union[RemoteURL, BasicLocalUrl]
 
 
 class JuniperFirmwareFlow(AbstractFirmwareFlow):
-    def __init__(self,logger: Logger, resource_config: NetworkingResourceConfig, cli_configurator: JuniperCliConfigurator):
-        super(JuniperFirmwareFlow, self).__init__(logger, resource_config)
+    def __init__(
+        self,
+        logger: Logger,
+        resource_config: NetworkingResourceConfig,
+        cli_configurator: JuniperCliConfigurator,
+    ):
+        super().__init__(logger, resource_config)
         self.cli_configurator = cli_configurator
 
-    def _load_firmware_flow(self, firmware_url: Url, vrf_management_name: str | None, timeout: int,)->None:
+    def _load_firmware_flow(
+        self,
+        firmware_url: Url,
+        vrf_management_name: str | None,
+        timeout: int,
+    ) -> None:
         """Load firmware.
 
         Update firmware version on device by loading provided
@@ -56,7 +72,7 @@ class JuniperFirmwareFlow(AbstractFirmwareFlow):
                 if rest_time > timeout:
                     raise Exception(
                         self.__class__.__name__,
-                        "Session cannot start reboot after {} sec.".format(timeout),
+                        f"Session cannot start reboot after {timeout} sec.",
                     )
                 cli_service.send_command("", timeout=10)
                 time.sleep(1)

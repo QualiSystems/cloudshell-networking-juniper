@@ -1,3 +1,4 @@
+cloudshell-shell-core~=6.0
 cloudshell-shell-flows~=2.0
 cloudshell-shell-connectivity-flow~=3.1
 cloudshell-cli~=4.0

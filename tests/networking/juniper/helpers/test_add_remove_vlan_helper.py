@@ -17,7 +17,7 @@ class TestVlanRange(TestCase):
         instance = VlanRange((first_id, last_id))
         self.assertEqual(instance.first_element, int(first_id))
         self.assertEqual(instance.last_element, int(last_id))
-        self.assertEqual(instance.name, "range-{0}-{1}".format(first_id, last_id))
+        self.assertEqual(instance.name, f"range-{first_id}-{last_id}")
         with self.assertRaises(Exception):
             VlanRange((30, 10))
 

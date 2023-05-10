@@ -39,7 +39,7 @@ class FakeSnmpHandler:
         self._mib_data_map = mib_data_map
 
     def walk(self, request_tuple):
-        requested_data = "{0}::{1}".format(*request_tuple)
+        requested_data = "{}::{}".format(*request_tuple)
         return build_mib_dict(self._mib_data_map[requested_data], requested_data)
 
     def load_mib(self, mib):
