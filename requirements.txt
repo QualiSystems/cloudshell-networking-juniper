@@ -1,7 +1,7 @@
 cloudshell-shell-core~=6.0
-cloudshell-shell-flows~=2.0
-cloudshell-shell-connectivity-flow~=3.1
-cloudshell-cli~=4.0
+cloudshell-shell-standards~=2.0
+cloudshell-shell-flows~=3.0
+cloudshell-shell-connectivity-flow~=4.0
+cloudshell-cli~=5.0
 cloudshell-snmp~=4.0
 xmltodict~=0.12
-cloudshell-shell-standards~=1.2
