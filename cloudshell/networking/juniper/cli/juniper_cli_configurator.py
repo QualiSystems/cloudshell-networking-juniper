@@ -1,10 +1,20 @@
 #!/usr/bin/python
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, ClassVar, Collection
+
+from attrs import define, field
+from typing_extensions import Self
 
 from cloudshell.cli.configurator import AbstractModeConfigurator
+from cloudshell.cli.factory.session_factory import (
+    CloudInfoAccessKeySessionFactory,
+    GenericSessionFactory,
+    SessionFactory,
+)
 from cloudshell.cli.service.command_mode_helper import CommandModeHelper
+from cloudshell.cli.types import T_COMMAND_MODE_RELATIONS, CliConfigProtocol
 
 from cloudshell.networking.juniper.cli.juniper_command_modes import (
     ConfigCommandMode,
@@ -16,21 +26,33 @@ from cloudshell.networking.juniper.cli.juniper_telnet_session import (
 )
 
 if TYPE_CHECKING:
-    from logging import Logger
-
     from cloudshell.cli.service.cli import CLI
     from cloudshell.cli.service.command_mode import CommandMode
-    from cloudshell.shell.standards.resource_config_generic_models import (
-        GenericCLIConfig,
-    )
 
 
+@define
 class JuniperCliConfigurator(AbstractModeConfigurator):
-    REGISTERED_SESSIONS = (JuniperSSHSession, JuniperTelnetSession)
+    REGISTERED_SESSIONS: ClassVar[tuple[SessionFactory]] = (
+        CloudInfoAccessKeySessionFactory(JuniperSSHSession),
+        GenericSessionFactory(JuniperTelnetSession),
+    )
+    modes: T_COMMAND_MODE_RELATIONS = field(init=False)
 
-    def __init__(self, cli: CLI, resource_config: GenericCLIConfig, logger: Logger):
-        super().__init__(resource_config, logger, cli)
-        self.modes = CommandModeHelper.create_command_mode(resource_config)
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        self.modes = CommandModeHelper.create_command_mode(self._auth)
+
+    @classmethod
+    def from_config(
+        cls,
+        conf: CliConfigProtocol,
+        logger: logging.Logger | None = None,
+        cli: CLI | None = None,
+        registered_sessions: Collection[SessionFactory] | None = None,
+    ) -> Self:
+        if not logger:
+            logger = logging.getLogger(__name__)
+        return super().from_config(conf, logger, cli, registered_sessions)
 
     @property
     def enable_mode(self) -> CommandMode:
