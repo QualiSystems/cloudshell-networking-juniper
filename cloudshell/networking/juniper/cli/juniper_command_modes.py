@@ -7,9 +7,7 @@ from typing import TYPE_CHECKING
 from cloudshell.cli.service.command_mode import CommandMode
 
 if TYPE_CHECKING:
-    from cloudshell.shell.standards.resource_config_generic_models import (
-        GenericCLIConfig,
-    )
+    from cloudshell.cli.service.auth_model import Auth
 
 
 class DefaultCommandMode(CommandMode):
@@ -17,8 +15,8 @@ class DefaultCommandMode(CommandMode):
     ENTER_COMMAND: str = ""
     EXIT_COMMAND: str = "exit"
 
-    def __init__(self, resource_config: GenericCLIConfig):
-        self.resource_config = resource_config
+    def __init__(self, auth: Auth):
+        self._auth = auth
         CommandMode.__init__(
             self,
             DefaultCommandMode.PROMPT,
@@ -53,8 +51,8 @@ class ConfigCommandMode(CommandMode):
     ENTER_COMMAND: str = "configure"
     EXIT_COMMAND: str = "exit"
 
-    def __init__(self, resource_config: GenericCLIConfig):
-        self.resource_config = resource_config
+    def __init__(self, auth: Auth):
+        self._auth = auth
         CommandMode.__init__(
             self,
             ConfigCommandMode.PROMPT,
@@ -73,8 +71,7 @@ class ConfigCommandMode(CommandMode):
                 (
                     r"[Pp]assword",
                     lambda session, logger: session.send_line(
-                        self.resource_config.enable_password
-                        or self.resource_config.password,
+                        self._auth.enable_password or self._auth.password,
                         logger,
                     ),
                 )
