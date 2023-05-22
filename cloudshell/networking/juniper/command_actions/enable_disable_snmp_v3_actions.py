@@ -1,6 +1,7 @@
 from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
+from cloudshell.cli.service.cli_service import CliService
 from cloudshell.snmp.snmp_parameters import SNMPV3Parameters
 
 from cloudshell.networking.juniper.command_templates import (
@@ -36,17 +37,8 @@ class EnableDisableSnmpV3Actions:
     SNMPV3_GROUP = "SHELLSSNMPV3GROUP"
     SNMPV3_VIEW = "SHELLSSNMPV3VIEW"
 
-    def __init__(self, cli_service, logger):
-        """Reboot actions.
-
-        :param cli_service: config mode cli service
-        :type cli_service: CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
+    def __init__(self, cli_service: CliService):
         self._cli_service = cli_service
-        self._logger = logger
 
     def enable_snmp_v3(
         self, snmp_user, snmp_password, snmp_priv_key, auth_proto, priv_proto
