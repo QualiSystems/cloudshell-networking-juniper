@@ -24,8 +24,6 @@ from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import (
 )
 
 if TYPE_CHECKING:
-    from logging import Logger
-
     from cloudshell.shell.flows.connectivity.parse_request_service import (
         AbstractParseConnectivityService,
     )
@@ -37,11 +35,10 @@ class JuniperConnectivity(AbstractConnectivityFlow):
     def __init__(
         self,
         parse_connectivity_request_service: AbstractParseConnectivityService,
-        logger: Logger,
         cli_configurator: JuniperCliConfigurator,
     ):
         self._cli_configurator = cli_configurator
-        super().__init__(parse_connectivity_request_service, logger)
+        super().__init__(parse_connectivity_request_service)
 
     def _set_vlan(self, action: ConnectivityActionModel) -> ConnectivityActionResult:
         vlan_range = action.connection_params.vlan_id
@@ -50,8 +47,8 @@ class JuniperConnectivity(AbstractConnectivityFlow):
         port_mode = action.connection_params.mode.name.lower()
         port = AddRemoveVlanHelper.extract_port_name(port_name)
         with self._cli_configurator.config_mode_service() as cli_service:
-            commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
-            vlan_actions = AddRemoveVlanActions(cli_service, self._logger)
+            commit_rollback_actions = CommitRollbackActions(cli_service)
+            vlan_actions = AddRemoveVlanActions(cli_service)
             try:
                 existing_ranges = VlanRangeOperations.create_from_dict(
                     vlan_actions.get_vlans()
@@ -96,8 +93,8 @@ class JuniperConnectivity(AbstractConnectivityFlow):
         port_name = action.action_target.name
         port = AddRemoveVlanHelper.extract_port_name(port_name)
         with self._cli_configurator.config_mode_service() as cli_service:
-            commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
-            vlan_actions = AddRemoveVlanActions(cli_service, self._logger)
+            commit_rollback_actions = CommitRollbackActions(cli_service)
+            vlan_actions = AddRemoveVlanActions(cli_service)
             try:
                 existing_ranges = VlanRangeOperations.create_from_dict(
                     vlan_actions.get_vlans()

@@ -1,32 +1,28 @@
+from __future__ import annotations
+
+from attrs import define
+
 from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
+from cloudshell.cli.service.cli_service import CliService
 
 from cloudshell.networking.juniper.command_templates import (
     commit_rollback as command_template,
 )
 
 
+@define
 class CommitRollbackActions:
-    def __init__(self, cli_service, logger):
-        """Add remove vlan.
+    _cli_service: CliService
 
-        :param cli_service: config mode cli_service
-        :type cli_service: CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
-        self._cli_service = cli_service
-        self._logger = logger
-
-    def commit(self, timeout=None):
+    def commit(self, timeout=None) -> str:
         output = CommandTemplateExecutor(
             self._cli_service, command_template.COMMIT, timeout=timeout
         ).execute_command()
         return output
 
-    def rollback(self):
+    def rollback(self) -> str:
         output = CommandTemplateExecutor(
             self._cli_service, command_template.ROLLBACK
         ).execute_command()

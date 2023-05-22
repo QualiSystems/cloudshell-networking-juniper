@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING
 
 from cloudshell.cli.session.session_exceptions import CommandExecutionException
@@ -18,7 +19,6 @@ from cloudshell.networking.juniper.command_actions.save_restore_actions import (
 from cloudshell.networking.juniper.helpers.errors import NotSupportedJunOSError
 
 if TYPE_CHECKING:
-    from logging import Logger
     from typing import Union
 
     from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
@@ -29,6 +29,9 @@ if TYPE_CHECKING:
     from ..cli.juniper_cli_configurator import JuniperCliConfigurator
 
     Url = Union[RemoteURL, BasicLocalUrl]
+
+
+logger = logging.getLogger(__name__)
 
 
 class JuniperConfigurationFlow(AbstractConfigurationFlow):
@@ -43,10 +46,9 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
     def __init__(
         self,
         resource_config: NetworkingResourceConfig,
-        logger: Logger,
         cli_configurator: JuniperCliConfigurator,
     ):
-        super().__init__(logger, resource_config)
+        super().__init__(resource_config)
         self.cli_configurator = cli_configurator
 
     @property
@@ -73,10 +75,10 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         if file_dst_url.scheme == "tftp":
             raise NotSupportedJunOSError("TFTP is not supported by JunOS")
 
-        self._logger.info(f"Save configuration to {file_dst_url}")
+        logger.info(f"Save configuration to {file_dst_url}")
 
         with self.cli_configurator.config_mode_service() as cli_service:
-            save_action = SaveRestoreActions(cli_service, self._logger)
+            save_action = SaveRestoreActions(cli_service)
             password = file_dst_url.password
             file_dst_url.password = None
             save_action.save_running(str(file_dst_url), password)
@@ -109,8 +111,8 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
             restore_type = "override"
 
         with self.cli_configurator.config_mode_service() as cli_service:
-            restore_actions = SaveRestoreActions(cli_service, self._logger)
-            commit_rollback_actions = CommitRollbackActions(cli_service, self._logger)
+            restore_actions = SaveRestoreActions(cli_service)
+            commit_rollback_actions = CommitRollbackActions(cli_service)
 
             password = config_path.password
             config_path.password = None

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import time
 from typing import TYPE_CHECKING
 
@@ -9,7 +10,6 @@ from cloudshell.shell.flows.firmware.basic_flow import AbstractFirmwareFlow
 from cloudshell.networking.juniper.command_actions.system_actions import SystemActions
 
 if TYPE_CHECKING:
-    from logging import Logger
     from typing import Union
 
     from cloudshell.shell.flows.utils.url import BasicLocalUrl, RemoteURL
@@ -22,14 +22,16 @@ if TYPE_CHECKING:
     Url = Union[RemoteURL, BasicLocalUrl]
 
 
+logger = logging.getLogger(__name__)
+
+
 class JuniperFirmwareFlow(AbstractFirmwareFlow):
     def __init__(
         self,
-        logger: Logger,
         resource_config: NetworkingResourceConfig,
         cli_configurator: JuniperCliConfigurator,
     ):
-        super().__init__(logger, resource_config)
+        super().__init__(resource_config)
         self.cli_configurator = cli_configurator
 
     def _load_firmware_flow(
@@ -50,18 +52,18 @@ class JuniperFirmwareFlow(AbstractFirmwareFlow):
         :param path: full path to firmware file on ftp/tftp location
         :param vrf_management_name: VRF Name
         """
-        self._logger.info("Upgrading firmware")
+        logger.info("Upgrading firmware")
         with self.cli_configurator.enable_mode_service() as cli_service:
-            system_actions = SystemActions(cli_service, self._logger)
+            system_actions = SystemActions(cli_service)
             system_actions.load_firmware(str(firmware_url), timeout=timeout)
             waiting_time = 0
             try:
                 system_actions.reboot(20)
-                self._logger.debug("Waiting session down")
+                logger.debug("Waiting session down")
                 waiting_time = self._wait_session_disconnect(cli_service, timeout)
             except Exception:
                 pass
-            self._logger.debug("Waiting session up")
+            logger.debug("Waiting session up")
             cli_service.reconnect(timeout - waiting_time)
 
     def _wait_session_disconnect(self, cli_service: CliService, timeout: int):
@@ -77,5 +79,5 @@ class JuniperFirmwareFlow(AbstractFirmwareFlow):
                 cli_service.send_command("", timeout=10)
                 time.sleep(1)
             except Exception:
-                self._logger.debug("Session disconnected")
+                logger.debug("Session disconnected")
                 return rest_time

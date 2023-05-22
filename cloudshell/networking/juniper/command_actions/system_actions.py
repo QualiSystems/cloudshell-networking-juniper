@@ -1,24 +1,18 @@
+from attrs import define
+
 from cloudshell.cli.command_template.command_template_executor import (
     CommandTemplateExecutor,
 )
+from cloudshell.cli.service.cli_service import CliService
 
 from cloudshell.networking.juniper.command_templates import (
     system_commands as command_template,
 )
 
 
+@define
 class SystemActions:
-    def __init__(self, cli_service, logger):
-        """Reboot actions.
-
-        :param cli_service: default mode cli_service
-        :type cli_service: cloudshell.cli.cli_service.CliService
-        :param logger:
-        :type logger: Logger
-        :return:
-        """
-        self._cli_service = cli_service
-        self._logger = logger
+    _cli_service: CliService
 
     def reboot(self, timeout=None):
         """Reboot the system.
