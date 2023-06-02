@@ -8,11 +8,10 @@ class TestSystemActions(TestCase):
     def setUp(self):
         self._cli_service = create_autospec("cloudshell.cli.cli_service.CliService")
         self._logger = Mock()
-        self._instance = SystemActions(self._cli_service, self._logger)
+        self._instance = SystemActions(self._cli_service)
 
     def test_init(self):
         self.assertIs(self._instance._cli_service, self._cli_service)
-        self.assertIs(self._instance._logger, self._logger)
 
     @patch(
         "cloudshell.networking.juniper.command_actions."
