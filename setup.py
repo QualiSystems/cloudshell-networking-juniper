@@ -24,4 +24,5 @@ setup(
     long_description="Juniper Shell operations",
     long_description_content_type="text/x-rst",
     include_package_data=True,
+    python_requires="~=3.9",
 )
