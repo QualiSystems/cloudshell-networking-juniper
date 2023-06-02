@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from cloudshell.cli.session.telnet_session import TelnetSession
-from cloudshell.cli.types import T_ACTION_MAP
 
 if TYPE_CHECKING:
     from logging import Logger
+
+    from cloudshell.cli.types import T_ACTION_MAP
 
 
 class JuniperTelnetSession(TelnetSession):

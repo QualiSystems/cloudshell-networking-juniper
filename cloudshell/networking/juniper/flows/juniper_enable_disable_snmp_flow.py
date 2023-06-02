@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 @define
 class JuniperEnableDisableSnmpFlow(EnableDisableSnmpFlowInterface):
-    cli_configurator: JuniperCliConfigurator
+    _cli_configurator: JuniperCliConfigurator
 
     def enable_snmp(self, snmp_parameters: SnmpParams) -> None:
         with self._cli_configurator.config_mode_service() as cli_service:
