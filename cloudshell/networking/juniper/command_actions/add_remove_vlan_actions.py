@@ -19,7 +19,7 @@ from cloudshell.networking.juniper.helpers.add_remove_vlan_helper import is_vlan
 logger = logging.getLogger(__name__)
 
 
-@define
+@define(slots=False)
 class AddRemoveVlanActions:
     _cli_service: CliService
 

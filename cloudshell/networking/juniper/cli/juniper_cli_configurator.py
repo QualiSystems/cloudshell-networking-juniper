@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Collection
+from collections.abc import Collection
+from typing import TYPE_CHECKING, ClassVar
 
 from attrs import define, field
 from typing_extensions import Self
@@ -13,7 +14,6 @@ from cloudshell.cli.factory.session_factory import (
     SessionFactory,
 )
 from cloudshell.cli.service.command_mode_helper import CommandModeHelper
-from cloudshell.cli.types import T_COMMAND_MODE_RELATIONS, CliConfigProtocol
 
 from cloudshell.networking.juniper.cli.juniper_command_modes import (
     ConfigCommandMode,
@@ -27,6 +27,7 @@ from cloudshell.networking.juniper.cli.juniper_telnet_session import (
 if TYPE_CHECKING:
     from cloudshell.cli.service.cli import CLI
     from cloudshell.cli.service.command_mode import CommandMode
+    from cloudshell.cli.types import T_COMMAND_MODE_RELATIONS, CliConfigProtocol
 
 
 @define
