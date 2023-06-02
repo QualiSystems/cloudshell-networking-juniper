@@ -4,7 +4,7 @@ import xmltodict
 
 
 class AddRemoveVlanHelper:
-    PORT_NAME_CHAR_REPLACEMENT = OrderedDict([(":", "--"), ("/", "-")])
+    PORT_NAME_CHAR_REPLACEMENT = OrderedDict([(":", "_"), ("/", "-")])
 
     @staticmethod
     def convert_port_name(port_name):
