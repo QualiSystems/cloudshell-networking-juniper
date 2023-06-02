@@ -21,11 +21,10 @@ class TestEnableDisableSnmpActions(TestCase):
     def setUp(self):
         self._cli_service = Mock()
         self._logger = Mock()
-        self._instance = EnableDisableSnmpActions(self._cli_service, self._logger)
+        self._instance = EnableDisableSnmpActions(self._cli_service)
 
     def test_init(self):
         self.assertIs(self._instance._cli_service, self._cli_service)
-        self.assertIs(self._instance._logger, self._logger)
 
     @patch(
         "cloudshell.networking.juniper.command_actions.enable_disable_snmp_actions."

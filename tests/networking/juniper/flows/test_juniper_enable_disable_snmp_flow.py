@@ -15,7 +15,7 @@ from cloudshell.networking.juniper.flows.juniper_enable_disable_snmp_flow import
 
 @pytest.fixture()
 def enable_disable_flow():
-    return JuniperEnableDisableSnmpFlow(MagicMock(), Mock())
+    return JuniperEnableDisableSnmpFlow(MagicMock())
 
 
 @pytest.fixture()
