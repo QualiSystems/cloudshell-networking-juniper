@@ -143,9 +143,9 @@ class JunEntityHelper(EntityHelperAbc):
                     return "chassis"
                 return ""
             for key, value in ENTITY_VENDOR_TYPE_TO_CLASS_MAP.items():
-                if key.search(entity.vendor_type):
+                if key.search(entity.vendor_type_label):
                     entity_class = value
-        elif entity.vendor_type.lower().endswith("::jnxfpc"):
+        elif entity.vendor_type_label.lower() == "jnxfpc":
             return "module"
 
         return entity_class
