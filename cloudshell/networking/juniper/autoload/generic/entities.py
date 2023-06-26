@@ -47,7 +47,7 @@ class JunPortsTable(PortsTable):
         r"^mams-\d",
         r"^ms-\d",
     ]
-    PORT_CHANNEL_EXCLUDE_LIST = PortsTable.PORT_CHANNEL_EXCLUDE_LIST + [r"\d\.\d"]
+    PORT_CHANNEL_EXCLUDE_LIST = PortsTable.PORT_CHANNEL_EXCLUDE_LIST + [r"\S\.\d"]
     PORT_VALID_TYPE_LIST = PortsTable.PORT_VALID_TYPE_LIST + ["pos", "sonet"]
 
     def _get_if_entities(self):
