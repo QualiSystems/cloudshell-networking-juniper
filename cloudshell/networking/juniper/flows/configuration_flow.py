@@ -80,8 +80,10 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
         with self.cli_configurator.config_mode_service() as cli_service:
             save_action = SaveRestoreActions(cli_service)
             password = file_dst_url.password
+            # JunOS doesn't support password in URL for SCP
             file_dst_url.password = None
             save_action.save_running(str(file_dst_url), password)
+            file_dst_url.password = password
 
     def _restore_flow(
         self,
@@ -114,6 +116,7 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
             restore_actions = SaveRestoreActions(cli_service)
             commit_rollback_actions = CommitRollbackActions(cli_service)
 
+            # JunOS doesn't support password in URL for SCP
             password = config_path.password
             config_path.password = None
             try:
@@ -125,3 +128,5 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
                 raise
+            finally:
+                config_path.password = password
