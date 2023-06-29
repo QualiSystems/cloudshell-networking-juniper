@@ -80,7 +80,6 @@ class JuniperConnectivity(AbstractConnectivityFlow):
                     for _range in new_range_cutoff:
                         vlan_actions.create_vlan(_range.name, _range.to_string())
 
-                vlan_actions.clean_port(port)
                 vlan_actions.assign_member(port, vlan_range, port_mode)
                 commit_rollback_actions.commit(timeout=120)
                 return ConnectivityActionResult.success_result(action, "Success")
@@ -95,21 +94,27 @@ class JuniperConnectivity(AbstractConnectivityFlow):
         with self._cli_configurator.config_mode_service() as cli_service:
             commit_rollback_actions = CommitRollbackActions(cli_service)
             vlan_actions = AddRemoveVlanActions(cli_service)
-            try:
-                existing_ranges = VlanRangeOperations.create_from_dict(
-                    vlan_actions.get_vlans()
-                )
-                range_instance = VlanRange(VlanRange.range_from_string(vlan_range))
-                range_intersection = VlanRangeOperations.find_intersection(
-                    [range_instance], existing_ranges
-                )
 
-                vlan_actions.delete_member(port, vlan_range)
-                commit_rollback_actions.commit()
-                for _range in range_intersection:
-                    vlan_actions.delete_vlan(_range.name)
-                commit_rollback_actions.commit()
-                return ConnectivityActionResult.success_result(action, "Success")
+            try:
+                if not vlan_range:  # remove all VLANs from port
+                    vlan_actions.clean_port(port)
+                    commit_rollback_actions.commit()
+                else:
+                    existing_ranges = VlanRangeOperations.create_from_dict(
+                        vlan_actions.get_vlans()
+                    )
+                    range_instance = VlanRange(VlanRange.range_from_string(vlan_range))
+                    range_intersection = VlanRangeOperations.find_intersection(
+                        [range_instance], existing_ranges
+                    )
+
+                    vlan_actions.delete_member(port, vlan_range)
+                    commit_rollback_actions.commit()
+                    for _range in range_intersection:
+                        vlan_actions.delete_vlan(_range.name)
+                    commit_rollback_actions.commit()
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
                 raise
+
+        return ConnectivityActionResult.success_result(action, "Success")
