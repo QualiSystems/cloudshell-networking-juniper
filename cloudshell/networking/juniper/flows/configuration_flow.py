@@ -124,7 +124,7 @@ class JuniperConfigurationFlow(AbstractConfigurationFlow):
                     restore_type, str(config_path), password
                 )
                 # wait longer for applying changes
-                commit_rollback_actions.commit(timeout=120)
+                commit_rollback_actions.commit(timeout=5 * 60)
             except CommandExecutionException:
                 commit_rollback_actions.rollback()
                 raise
