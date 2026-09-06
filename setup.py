@@ -24,5 +24,12 @@ setup(
     long_description="Juniper Shell operations",
     long_description_content_type="text/x-rst",
     include_package_data=True,
-    python_requires="~=3.9",
+    python_requires=">=3.9",
+    classifiers=[
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+    ],
 )
